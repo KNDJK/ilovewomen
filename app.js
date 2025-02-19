@@ -18,7 +18,7 @@ const uploadPreset = "ChatApp Web"; // Tu Upload Preset
 function showAuthMessage(message, isError = false) {
     authMessage.textContent = message;
     authMessage.classList.remove('hidden');
-    authMessage.style.color = isError ? 'red' : 'green';
+    authMessage.className = isError ? 'error' : '';
 }
 
 // Registro de usuario
@@ -35,7 +35,11 @@ registerBtn.addEventListener('click', () => {
         .then((userCredential) => {
             // Registro exitoso
             showAuthMessage("Registro exitoso. Redirigiendo al chat...");
-            setTimeout(() => showChat(), 2000); // Redirigir después de 2 segundos
+            setTimeout(() => {
+                authContainer.classList.add('hidden');
+                chatContainer.classList.remove('hidden');
+                loadMessages();
+            }, 2000); // Redirigir después de 2 segundos
         })
         .catch((error) => {
             // Manejo de errores
@@ -57,20 +61,17 @@ loginBtn.addEventListener('click', () => {
         .then((userCredential) => {
             // Inicio de sesión exitoso
             showAuthMessage("Inicio de sesión exitoso. Redirigiendo al chat...");
-            setTimeout(() => showChat(), 2000); // Redirigir después de 2 segundos
+            setTimeout(() => {
+                authContainer.classList.add('hidden');
+                chatContainer.classList.remove('hidden');
+                loadMessages();
+            }, 2000); // Redirigir después de 2 segundos
         })
         .catch((error) => {
             // Manejo de errores
             showAuthMessage(`Error durante el inicio de sesión: ${error.message}`, true);
         });
 });
-
-// Mostrar chat después de autenticación
-function showChat() {
-    authContainer.classList.add('hidden');
-    chatContainer.classList.remove('hidden');
-    loadMessages();
-}
 
 // Cargar mensajes
 function loadMessages() {
@@ -137,7 +138,7 @@ function addMessageToChat(text, imageUrl = null) {
     messageElement.classList.add('message');
     messageElement.innerHTML = `
         <strong>${auth.currentUser.email}:</strong> ${text}
-        ${imageUrl ? `<img src="${imageUrl}" alt="Imagen" style="max-width: 200px;">` : ''}
+        ${imageUrl ? `<img src="${imageUrl}" alt="Imagen">` : ''}
     `;
     chatMessages.appendChild(messageElement);
 }
