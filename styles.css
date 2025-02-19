@@ -34,6 +34,11 @@ button:hover {
     background-color: #45a049;
 }
 
+#auth-message {
+    margin-top: 10px;
+    font-size: 14px;
+}
+
 #chat-messages {
     height: 400px;
     overflow-y: auto;

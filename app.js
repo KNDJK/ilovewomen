@@ -4,6 +4,7 @@ const emailInput = document.getElementById('email');
 const passwordInput = document.getElementById('password');
 const registerBtn = document.getElementById('register-btn');
 const loginBtn = document.getElementById('login-btn');
+const authMessage = document.getElementById('auth-message');
 const chatMessages = document.getElementById('chat-messages');
 const messageInput = document.getElementById('message-input');
 const imageInput = document.getElementById('image-input');
@@ -13,28 +14,55 @@ const sendBtn = document.getElementById('send-btn');
 const cloudinary = cloudinary.Cloudinary.new({ cloud_name: "dob3xhs1b" }); // Tu Cloud Name
 const uploadPreset = "ChatApp Web"; // Tu Upload Preset
 
+// Mostrar mensaje de estado
+function showAuthMessage(message, isError = false) {
+    authMessage.textContent = message;
+    authMessage.classList.remove('hidden');
+    authMessage.style.color = isError ? 'red' : 'green';
+}
+
 // Registro de usuario
 registerBtn.addEventListener('click', () => {
     const email = emailInput.value;
     const password = passwordInput.value;
+
+    if (!email || !password) {
+        showAuthMessage("Por favor, ingresa un correo electrónico y una contraseña.", true);
+        return;
+    }
+
     auth.createUserWithEmailAndPassword(email, password)
-        .then(() => {
-            alert('Registro exitoso');
-            showChat();
+        .then((userCredential) => {
+            // Registro exitoso
+            showAuthMessage("Registro exitoso. Redirigiendo al chat...");
+            setTimeout(() => showChat(), 2000); // Redirigir después de 2 segundos
         })
-        .catch(error => alert(error.message));
+        .catch((error) => {
+            // Manejo de errores
+            showAuthMessage(`Error durante el registro: ${error.message}`, true);
+        });
 });
 
 // Inicio de sesión
 loginBtn.addEventListener('click', () => {
     const email = emailInput.value;
     const password = passwordInput.value;
+
+    if (!email || !password) {
+        showAuthMessage("Por favor, ingresa un correo electrónico y una contraseña.", true);
+        return;
+    }
+
     auth.signInWithEmailAndPassword(email, password)
-        .then(() => {
-            alert('Inicio de sesión exitoso');
-            showChat();
+        .then((userCredential) => {
+            // Inicio de sesión exitoso
+            showAuthMessage("Inicio de sesión exitoso. Redirigiendo al chat...");
+            setTimeout(() => showChat(), 2000); // Redirigir después de 2 segundos
         })
-        .catch(error => alert(error.message));
+        .catch((error) => {
+            // Manejo de errores
+            showAuthMessage(`Error durante el inicio de sesión: ${error.message}`, true);
+        });
 });
 
 // Mostrar chat después de autenticación

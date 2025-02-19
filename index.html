@@ -7,14 +7,17 @@
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
+    <!-- Contenedor de autenticación -->
     <div id="auth-container">
         <h1>Regístrate o Inicia Sesión</h1>
         <input type="text" id="email" placeholder="Correo electrónico">
         <input type="password" id="password" placeholder="Contraseña">
         <button id="register-btn">Registrarse</button>
         <button id="login-btn">Iniciar Sesión</button>
+        <p id="auth-message" class="hidden"></p> <!-- Mensaje de estado -->
     </div>
 
+    <!-- Contenedor del chat -->
     <div id="chat-container" class="hidden">
         <div id="chat-messages"></div>
         <input type="text" id="message-input" placeholder="Escribe un mensaje...">
