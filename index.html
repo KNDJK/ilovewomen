@@ -3,26 +3,37 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chat General</title>
+    <title>ChatApp</title>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <!-- Contenedor de autenticación -->
+    <!-- Fondo borroso -->
+    <div id="background"></div>
+
+    <!-- Contenedor de autenticación flotante -->
     <div id="auth-container">
-        <h1>Regístrate o Inicia Sesión</h1>
-        <input type="text" id="email" placeholder="Correo electrónico">
-        <input type="password" id="password" placeholder="Contraseña">
-        <button id="register-btn">Registrarse</button>
-        <button id="login-btn">Iniciar Sesión</button>
-        <p id="auth-message" class="hidden"></p> <!-- Mensaje de estado -->
+        <div class="auth-box">
+            <h1>ChatApp</h1>
+            <input type="text" id="email" placeholder="Correo electrónico">
+            <input type="password" id="password" placeholder="Contraseña">
+            <button id="register-btn">Registrarse</button>
+            <button id="login-btn">Iniciar Sesión</button>
+            <p id="auth-message" class="hidden"></p> <!-- Mensaje de estado -->
+        </div>
     </div>
 
     <!-- Contenedor del chat -->
     <div id="chat-container" class="hidden">
+        <div id="chat-header">
+            <h2>Chat General</h2>
+            <button id="logout-btn">Cerrar Sesión</button>
+        </div>
         <div id="chat-messages"></div>
-        <input type="text" id="message-input" placeholder="Escribe un mensaje...">
-        <input type="file" id="image-input" accept="image/*">
-        <button id="send-btn">Enviar</button>
+        <div id="chat-input">
+            <input type="text" id="message-input" placeholder="Escribe un mensaje...">
+            <input type="file" id="image-input" accept="image/*">
+            <button id="send-btn">Enviar</button>
+        </div>
     </div>
 
     <!-- Firebase SDK -->
