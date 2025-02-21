@@ -42,6 +42,10 @@ button:hover {
     background: #1b5fd9;
 }
 
+.hidden {
+    display: none;
+}
+
 #chat-box {
     height: 300px;
     overflow-y: auto;
