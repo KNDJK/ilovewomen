@@ -11,83 +11,34 @@ const firebaseConfig = {
 
 // Inicializa Firebase
 const app = firebase.initializeApp(firebaseConfig);
-const auth = firebase.auth();
 const db = firebase.firestore();
 
 // Elementos del DOM
-const loginScreen = document.getElementById('login-screen');
-const registerScreen = document.getElementById('register-screen');
-const chatScreen = document.getElementById('chat-screen');
-const loginForm = document.getElementById('login-form');
-const registerForm = document.getElementById('register-form');
-const chatForm = document.getElementById('chat-form');
+const nameModal = document.getElementById('name-modal');
+const chatContainer = document.getElementById('chat-container');
+const usernameInput = document.getElementById('username-input');
+const startChatButton = document.getElementById('start-chat-button');
 const chatBox = document.getElementById('chat-box');
+const chatForm = document.getElementById('chat-form');
 const messageInput = document.getElementById('message-input');
-const logoutButton = document.getElementById('logout-button');
 
-// Mostrar pantalla de registro
-document.getElementById('register-link').addEventListener('click', (e) => {
-    e.preventDefault();
-    loginScreen.classList.add('hidden');
-    registerScreen.classList.remove('hidden');
-});
+let username = '';
 
-// Mostrar pantalla de inicio de sesión
-document.getElementById('login-link').addEventListener('click', (e) => {
-    e.preventDefault();
-    registerScreen.classList.add('hidden');
-    loginScreen.classList.remove('hidden');
-});
+// Mostrar la ventana flotante al cargar la página
+window.onload = () => {
+    nameModal.style.display = 'flex';
+};
 
-// Registro de usuario
-registerForm.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const username = document.getElementById('register-username').value;
-    const email = document.getElementById('register-email').value;
-    const password = document.getElementById('register-password').value;
-    const confirmPassword = document.getElementById('register-confirm-password').value;
-
-    // Validaciones
-    if (password !== confirmPassword) {
-        alert('Las contraseñas no coinciden.');
+// Comenzar el chat
+startChatButton.addEventListener('click', () => {
+    const inputValue = usernameInput.value.trim();
+    if (inputValue === '') {
+        alert('Por favor, ingresa un nombre válido.');
         return;
     }
-
-    try {
-        // Crear usuario en Firebase Authentication
-        const userCredential = await auth.createUserWithEmailAndPassword(email, password);
-        const user = userCredential.user;
-
-        // Guardar datos del usuario en Firestore
-        await db.collection('users').doc(user.uid).set({
-            username,
-            email
-        });
-
-        alert('Registro exitoso. Ahora puedes iniciar sesión.');
-        registerScreen.classList.add('hidden');
-        loginScreen.classList.remove('hidden');
-    } catch (error) {
-        alert(`Error: ${error.message}`);
-    }
-});
-
-// Inicio de sesión
-loginForm.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const email = document.getElementById('login-email').value;
-    const password = document.getElementById('login-password').value;
-
-    try {
-        const userCredential = await auth.signInWithEmailAndPassword(email, password);
-        const user = userCredential.user;
-
-        // Mostrar pantalla del chat
-        loginScreen.classList.add('hidden');
-        chatScreen.classList.remove('hidden');
-    } catch (error) {
-        alert(`Error: ${error.message}`);
-    }
+    username = inputValue;
+    nameModal.style.display = 'none';
+    chatContainer.classList.remove('hidden');
 });
 
 // Escuchar mensajes en tiempo real
@@ -110,36 +61,28 @@ chatForm.addEventListener('submit', async (e) => {
 
     if (messageText === '') return;
 
-    const user = auth.currentUser;
-    if (user) {
-        const userDoc = await db.collection('users').doc(user.uid).get();
-        const username = userDoc.data().username;
-
-        await db.collection('messages').add({
-            username,
-            text: messageText,
-            timestamp: firebase.firestore.FieldValue.serverTimestamp()
-        });
-
-        messageInput.value = ''; // Limpiar el campo de texto
-    }
-});
-
-// Cerrar sesión
-logoutButton.addEventListener('click', () => {
-    auth.signOut().then(() => {
-        chatScreen.classList.add('hidden');
-        loginScreen.classList.remove('hidden');
+    await db.collection('messages').add({
+        username,
+        text: messageText,
+        timestamp: firebase.firestore.FieldValue.serverTimestamp()
     });
+
+    messageInput.value = ''; // Limpiar el campo de texto
 });
 
-// Verificar si el usuario ya está autenticado
-auth.onAuthStateChanged((user) => {
-    if (user) {
-        loginScreen.classList.add('hidden');
-        chatScreen.classList.remove('hidden');
-    } else {
-        chatScreen.classList.add('hidden');
-        loginScreen.classList.remove('hidden');
-    }
-});
+// Eliminar mensajes después de 24 horas
+const deleteOldMessages = async () => {
+    const now = new Date();
+    const twentyFourHoursAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+
+    const messages = await db.collection('messages')
+        .where('timestamp', '<=', twentyFourHoursAgo)
+        .get();
+
+    messages.forEach((doc) => {
+        doc.ref.delete();
+    });
+};
+
+// Ejecutar la eliminación cada hora
+setInterval(deleteOldMessages, 60 * 60 * 1000);
