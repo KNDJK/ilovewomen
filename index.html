@@ -12,8 +12,8 @@
         <div id="login-screen" class="screen">
             <h1>Bienvenido a Mi Red Social</h1>
             <form id="login-form">
-                <input type="email" id="email" placeholder="Correo electrónico" required>
-                <input type="password" id="password" placeholder="Contraseña" required>
+                <input type="email" id="login-email" placeholder="Correo electrónico" required>
+                <input type="password" id="login-password" placeholder="Contraseña" required>
                 <button type="submit">Iniciar Sesión</button>
             </form>
             <p>¿No tienes una cuenta? <a href="#" id="register-link">Regístrate aquí</a></p>
@@ -23,10 +23,10 @@
         <div id="register-screen" class="screen hidden">
             <h1>Regístrate</h1>
             <form id="register-form">
-                <input type="text" id="username" placeholder="Nombre de usuario" required>
-                <input type="email" id="email" placeholder="Correo electrónico" required>
-                <input type="password" id="password" placeholder="Contraseña" required>
-                <input type="file" id="profile-pic" accept="image/*">
+                <input type="text" id="register-username" placeholder="Nombre de usuario" required>
+                <input type="email" id="register-email" placeholder="Correo electrónico" required>
+                <input type="password" id="register-password" placeholder="Contraseña" required>
+                <input type="password" id="register-confirm-password" placeholder="Confirmar contraseña" required>
                 <button type="submit">Registrarse</button>
             </form>
             <p>¿Ya tienes una cuenta? <a href="#" id="login-link">Inicia sesión aquí</a></p>
