@@ -9,6 +9,7 @@ const chatMessages = document.getElementById('chat-messages');
 const messageInput = document.getElementById('message-input');
 const imageInput = document.getElementById('image-input');
 const sendBtn = document.getElementById('send-btn');
+const logoutBtn = document.getElementById('logout-btn');
 
 // Configuración de Cloudinary
 const cloudinary = cloudinary.Cloudinary.new({ cloud_name: "dob3xhs1b" }); // Tu Cloud Name
@@ -23,54 +24,66 @@ function showAuthMessage(message, isError = false) {
 
 // Registro de usuario
 registerBtn.addEventListener('click', () => {
+    console.log("Intentando registrar usuario..."); // Mensaje de depuración
     const email = emailInput.value;
     const password = passwordInput.value;
 
     if (!email || !password) {
+        console.log("Correo o contraseña vacíos"); // Mensaje de depuración
         showAuthMessage("Por favor, ingresa un correo electrónico y una contraseña.", true);
         return;
     }
 
     auth.createUserWithEmailAndPassword(email, password)
         .then((userCredential) => {
-            // Registro exitoso
+            console.log("Registro exitoso:", userCredential.user); // Mensaje de depuración
             showAuthMessage("Registro exitoso. Redirigiendo al chat...");
             setTimeout(() => {
                 authContainer.classList.add('hidden');
                 chatContainer.classList.remove('hidden');
                 loadMessages();
-            }, 2000); // Redirigir después de 2 segundos
+            }, 2000);
         })
         .catch((error) => {
-            // Manejo de errores
+            console.error("Error durante el registro:", error); // Mensaje de depuración
             showAuthMessage(`Error durante el registro: ${error.message}`, true);
         });
 });
 
 // Inicio de sesión
 loginBtn.addEventListener('click', () => {
+    console.log("Intentando iniciar sesión..."); // Mensaje de depuración
     const email = emailInput.value;
     const password = passwordInput.value;
 
     if (!email || !password) {
+        console.log("Correo o contraseña vacíos"); // Mensaje de depuración
         showAuthMessage("Por favor, ingresa un correo electrónico y una contraseña.", true);
         return;
     }
 
     auth.signInWithEmailAndPassword(email, password)
         .then((userCredential) => {
-            // Inicio de sesión exitoso
+            console.log("Inicio de sesión exitoso:", userCredential.user); // Mensaje de depuración
             showAuthMessage("Inicio de sesión exitoso. Redirigiendo al chat...");
             setTimeout(() => {
                 authContainer.classList.add('hidden');
                 chatContainer.classList.remove('hidden');
                 loadMessages();
-            }, 2000); // Redirigir después de 2 segundos
+            }, 2000);
         })
         .catch((error) => {
-            // Manejo de errores
+            console.error("Error durante el inicio de sesión:", error); // Mensaje de depuración
             showAuthMessage(`Error durante el inicio de sesión: ${error.message}`, true);
         });
+});
+
+// Cerrar sesión
+logoutBtn.addEventListener('click', () => {
+    auth.signOut().then(() => {
+        chatContainer.classList.add('hidden');
+        authContainer.classList.remove('hidden');
+    });
 });
 
 // Cargar mensajes
@@ -112,9 +125,12 @@ function uploadImageToCloudinary(file) {
         body: formData
     })
     .then(response => response.json())
-    .then(data => data.secure_url)
+    .then(data => {
+        console.log("Imagen subida a Cloudinary:", data.secure_url); // Mensaje de depuración
+        return data.secure_url;
+    })
     .catch(error => {
-        console.error("Error al subir la imagen:", error);
+        console.error("Error al subir la imagen:", error); // Mensaje de depuración
         return null;
     });
 }
