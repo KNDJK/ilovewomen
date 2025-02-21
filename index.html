@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat Global</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- Ventana flotante para ingresar el nombre -->
+    <div id="name-modal" class="modal">
+        <div class="modal-content">
+            <h2>Bienvenido al Chat Global</h2>
+            <p>Por favor, ingresa tu nombre para comenzar:</p>
+            <input type="text" id="username-input" placeholder="Tu nombre" required>
+            <button id="start-chat-button">Comenzar</button>
+        </div>
+    </div>
+
+    <!-- Contenedor del chat -->
+    <div id="chat-container" class="hidden">
+        <h1>Chat Global</h1>
+        <div id="chat-box">
+            <!-- Los mensajes se cargarán aquí -->
+        </div>
+        <form id="chat-form">
+            <input type="text" id="message-input" placeholder="Escribe un mensaje..." required>
+            <button type="submit">Enviar</button>
+        </form>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/10.1.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.1.0/firebase-firestore.js"></script>
+    <!-- Script de la aplicación -->
+    <script src="script.js"></script>
+</body>
+</html>
