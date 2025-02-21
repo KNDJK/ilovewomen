@@ -25,10 +25,6 @@ body {
     gap: 1rem;
 }
 
-.hidden {
-    display: none;
-}
-
 input, button {
     padding: 0.5rem;
     border: none;
