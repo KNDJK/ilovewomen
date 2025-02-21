@@ -14,23 +14,11 @@ const app = firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 const db = firebase.firestore();
 
-// Configuración de Cloudinary
-const cloudinaryConfig = {
-    cloudName: 'dob3xhs1b', // Tu Cloud Name
-    apiKey: '332996559628532', // Tu API Key
-    apiSecret: 'm211_OEwPYtfg_u8do-6p8KTr2U', // Tu API Secret (solo para backend)
-    uploadPreset: 'ml_default' // Puedes crear un Upload Preset en Cloudinary
-};
-
 // Elementos del DOM
 const loginScreen = document.getElementById('login-screen');
 const registerScreen = document.getElementById('register-screen');
-const profileScreen = document.getElementById('profile-screen');
 const loginForm = document.getElementById('login-form');
 const registerForm = document.getElementById('register-form');
-const logoutButton = document.getElementById('logout-button');
-const profileImage = document.getElementById('profile-image');
-const profileUsername = document.getElementById('profile-username');
 
 // Mostrar pantalla de registro
 document.getElementById('register-link').addEventListener('click', (e) => {
@@ -46,24 +34,6 @@ document.getElementById('login-link').addEventListener('click', (e) => {
     loginScreen.classList.remove('hidden');
 });
 
-// Función para subir la imagen a Cloudinary
-const uploadImageToCloudinary = async (file) => {
-    const formData = new FormData();
-    formData.append('file', file);
-    formData.append('upload_preset', cloudinaryConfig.uploadPreset); // Usa tu Upload Preset
-    formData.append('api_key', cloudinaryConfig.apiKey); // Agrega tu API Key
-
-    const response = await fetch(
-        `https://api.cloudinary.com/v1_1/${cloudinaryConfig.cloudName}/image/upload`,
-        {
-            method: 'POST',
-            body: formData
-        }
-    );
-    const data = await response.json();
-    return data.secure_url; // URL de la imagen subida
-};
-
 // Registro de usuario
 registerForm.addEventListener('submit', async (e) => {
     e.preventDefault();
@@ -72,7 +42,7 @@ registerForm.addEventListener('submit', async (e) => {
     const password = document.getElementById('register-password').value;
     const confirmPassword = document.getElementById('register-confirm-password').value;
 
-    // Validar que las contraseñas coincidan
+    // Validaciones
     if (password !== confirmPassword) {
         alert('Las contraseñas no coinciden.');
         return;
@@ -89,7 +59,7 @@ registerForm.addEventListener('submit', async (e) => {
             email
         });
 
-        alert('Registro exitoso. Inicia sesión.');
+        alert('Registro exitoso. Ahora puedes iniciar sesión.');
         registerScreen.classList.add('hidden');
         loginScreen.classList.remove('hidden');
     } catch (error) {
@@ -107,37 +77,9 @@ loginForm.addEventListener('submit', async (e) => {
         const userCredential = await auth.signInWithEmailAndPassword(email, password);
         const user = userCredential.user;
 
-        // Obtener datos del usuario desde Firestore
-        const userDoc = await db.collection('users').doc(user.uid).get();
-        if (userDoc.exists) {
-            const userData = userDoc.data();
-            profileUsername.textContent = userData.username;
-            loginScreen.classList.add('hidden');
-            profileScreen.classList.remove('hidden');
-        }
+        // Redirigir a la página del chat
+        window.location.href = "chat.html";
     } catch (error) {
         alert(`Error: ${error.message}`);
-    }
-});
-
-// Cerrar sesión
-logoutButton.addEventListener('click', () => {
-    auth.signOut().then(() => {
-        profileScreen.classList.add('hidden');
-        loginScreen.classList.remove('hidden');
-    });
-});
-
-// Verificar si el usuario ya está autenticado
-auth.onAuthStateChanged((user) => {
-    if (user) {
-        db.collection('users').doc(user.uid).get().then((doc) => {
-            if (doc.exists) {
-                const userData = doc.data();
-                profileUsername.textContent = userData.username;
-                loginScreen.classList.add('hidden');
-                profileScreen.classList.remove('hidden');
-            }
-        });
     }
 });
