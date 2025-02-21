@@ -3,36 +3,43 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ChatApp</title>
+    <title>Mi Red Social</title>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <!-- Fondo borroso -->
-    <div id="background"></div>
-
-    <!-- Contenedor de autenticación flotante -->
-    <div id="auth-container">
-        <div class="auth-box">
-            <h1>ChatApp</h1>
-            <input type="text" id="email" placeholder="Correo electrónico">
-            <input type="password" id="password" placeholder="Contraseña">
-            <button id="register-btn">Registrarse</button>
-            <button id="login-btn">Iniciar Sesión</button>
-            <p id="auth-message" class="hidden"></p> <!-- Mensaje de estado -->
+    <div class="container">
+        <!-- Pantalla de Inicio de Sesión -->
+        <div id="login-screen" class="screen">
+            <h1>Bienvenido a Mi Red Social</h1>
+            <form id="login-form">
+                <input type="email" id="email" placeholder="Correo electrónico" required>
+                <input type="password" id="password" placeholder="Contraseña" required>
+                <button type="submit">Iniciar Sesión</button>
+            </form>
+            <p>¿No tienes una cuenta? <a href="#" id="register-link">Regístrate aquí</a></p>
         </div>
-    </div>
 
-    <!-- Contenedor del chat -->
-    <div id="chat-container" class="hidden">
-        <div id="chat-header">
-            <h2>Chat General</h2>
-            <button id="logout-btn">Cerrar Sesión</button>
+        <!-- Pantalla de Registro -->
+        <div id="register-screen" class="screen hidden">
+            <h1>Regístrate</h1>
+            <form id="register-form">
+                <input type="text" id="username" placeholder="Nombre de usuario" required>
+                <input type="email" id="email" placeholder="Correo electrónico" required>
+                <input type="password" id="password" placeholder="Contraseña" required>
+                <input type="file" id="profile-pic" accept="image/*">
+                <button type="submit">Registrarse</button>
+            </form>
+            <p>¿Ya tienes una cuenta? <a href="#" id="login-link">Inicia sesión aquí</a></p>
         </div>
-        <div id="chat-messages"></div>
-        <div id="chat-input">
-            <input type="text" id="message-input" placeholder="Escribe un mensaje...">
-            <input type="file" id="image-input" accept="image/*">
-            <button id="send-btn">Enviar</button>
+
+        <!-- Pantalla de Perfil -->
+        <div id="profile-screen" class="screen hidden">
+            <h1>Mi Perfil</h1>
+            <div class="profile-info">
+                <img id="profile-image" src="" alt="Foto de perfil">
+                <h2 id="profile-username"></h2>
+            </div>
+            <button id="logout-button">Cerrar Sesión</button>
         </div>
     </div>
 
@@ -40,14 +47,7 @@
     <script src="https://www.gstatic.com/firebasejs/10.1.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.1.0/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.1.0/firebase-firestore.js"></script>
-
-    <!-- Cloudinary SDK -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/cloudinary-core/2.11.4/cloudinary-core-shrinkwrap.min.js"></script>
-
-    <!-- Configuración de Firebase -->
-    <script src="firebase-config.js"></script>
-
-    <!-- Lógica de la aplicación -->
-    <script src="app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.1.0/firebase-storage.js"></script>
+    <script src="script.js"></script>
 </body>
 </html>
