@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Regístrate - Mi Red Social</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Pantalla de Registro -->
+        <div id="register-screen" class="screen">
+            <h1>Regístrate</h1>
+            <form id="register-form">
+                <input type="text" id="register-username" placeholder="Nombre de usuario" required>
+                <input type="email" id="register-email" placeholder="Correo electrónico" required>
+                <input type="password" id="register-password" placeholder="Contraseña" required>
+                <input type="password" id="register-confirm-password" placeholder="Confirmar contraseña" required>
+                <input type="file" id="profile-pic" accept="image/*">
+                <button type="submit">Registrarse</button>
+            </form>
+            <p>¿Ya tienes una cuenta? <a href="index.html">Inicia sesión aquí</a></p>
+        </div>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/10.1.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.1.0/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.1.0/firebase-firestore.js"></script>
+    <!-- Script de la página de registro -->
+    <script src="register.js"></script>
+</body>
+</html>
