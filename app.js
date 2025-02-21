@@ -1,160 +1,143 @@
-const authContainer = document.getElementById('auth-container');
-const chatContainer = document.getElementById('chat-container');
-const emailInput = document.getElementById('email');
-const passwordInput = document.getElementById('password');
-const registerBtn = document.getElementById('register-btn');
-const loginBtn = document.getElementById('login-btn');
-const authMessage = document.getElementById('auth-message');
-const chatMessages = document.getElementById('chat-messages');
-const messageInput = document.getElementById('message-input');
-const imageInput = document.getElementById('image-input');
-const sendBtn = document.getElementById('send-btn');
-const logoutBtn = document.getElementById('logout-btn');
+// Configuración de Firebase
+const firebaseConfig = {
+    apiKey: "AIzaSyBG3v9FYhhbrggkdrvQ17mUH04FjC3wfNc",
+    authDomain: "chatapp-web-9ea82.firebaseapp.com",
+    projectId: "chatapp-web-9ea82",
+    storageBucket: "chatapp-web-9ea82.appspot.com",
+    messagingSenderId: "394476250181",
+    appId: "1:394476250181:web:9de7b9c9d08b27977f6f2c",
+    measurementId: "G-PL3230HHZ9"
+};
+
+// Inicializa Firebase
+const app = firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const db = firebase.firestore();
 
 // Configuración de Cloudinary
-const cloudinary = cloudinary.Cloudinary.new({ cloud_name: "dob3xhs1b" }); // Tu Cloud Name
-const uploadPreset = "ChatApp Web"; // Tu Upload Preset
+const cloudinaryConfig = {
+    cloudName: 'dob3xhs1b', // Tu Cloud Name
+    apiKey: '332996559628532', // Tu API Key
+    apiSecret: 'm211_OEwPYtfg_u8do-6p8KTr2U', // Tu API Secret (solo para backend)
+    uploadPreset: 'ml_default' // Puedes crear un Upload Preset en Cloudinary
+};
 
-// Mostrar mensaje de estado
-function showAuthMessage(message, isError = false) {
-    authMessage.textContent = message;
-    authMessage.classList.remove('hidden');
-    authMessage.className = isError ? 'error' : '';
-}
+// Elementos del DOM
+const loginScreen = document.getElementById('login-screen');
+const registerScreen = document.getElementById('register-screen');
+const profileScreen = document.getElementById('profile-screen');
+const loginForm = document.getElementById('login-form');
+const registerForm = document.getElementById('register-form');
+const logoutButton = document.getElementById('logout-button');
+const profileImage = document.getElementById('profile-image');
+const profileUsername = document.getElementById('profile-username');
+
+// Mostrar pantalla de registro
+document.getElementById('register-link').addEventListener('click', (e) => {
+    e.preventDefault();
+    loginScreen.classList.add('hidden');
+    registerScreen.classList.remove('hidden');
+});
+
+// Mostrar pantalla de inicio de sesión
+document.getElementById('login-link').addEventListener('click', (e) => {
+    e.preventDefault();
+    registerScreen.classList.add('hidden');
+    loginScreen.classList.remove('hidden');
+});
+
+// Función para subir la imagen a Cloudinary
+const uploadImageToCloudinary = async (file) => {
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('upload_preset', cloudinaryConfig.uploadPreset); // Usa tu Upload Preset
+    formData.append('api_key', cloudinaryConfig.apiKey); // Agrega tu API Key
+
+    const response = await fetch(
+        `https://api.cloudinary.com/v1_1/${cloudinaryConfig.cloudName}/image/upload`,
+        {
+            method: 'POST',
+            body: formData
+        }
+    );
+    const data = await response.json();
+    return data.secure_url; // URL de la imagen subida
+};
 
 // Registro de usuario
-registerBtn.addEventListener('click', () => {
-    console.log("Intentando registrar usuario..."); // Mensaje de depuración
-    const email = emailInput.value;
-    const password = passwordInput.value;
+registerForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const username = document.getElementById('username').value;
+    const email = document.getElementById('email').value;
+    const password = document.getElementById('password').value;
+    const profilePic = document.getElementById('profile-pic').files[0];
 
-    if (!email || !password) {
-        console.log("Correo o contraseña vacíos"); // Mensaje de depuración
-        showAuthMessage("Por favor, ingresa un correo electrónico y una contraseña.", true);
-        return;
-    }
+    try {
+        // Crear usuario en Firebase Authentication
+        const userCredential = await auth.createUserWithEmailAndPassword(email, password);
+        const user = userCredential.user;
 
-    auth.createUserWithEmailAndPassword(email, password)
-        .then((userCredential) => {
-            console.log("Registro exitoso:", userCredential.user); // Mensaje de depuración
-            showAuthMessage("Registro exitoso. Redirigiendo al chat...");
-            setTimeout(() => {
-                authContainer.classList.add('hidden');
-                chatContainer.classList.remove('hidden');
-                loadMessages();
-            }, 2000);
-        })
-        .catch((error) => {
-            console.error("Error durante el registro:", error); // Mensaje de depuración
-            showAuthMessage(`Error durante el registro: ${error.message}`, true);
+        // Subir la imagen a Cloudinary
+        const profilePicUrl = await uploadImageToCloudinary(profilePic);
+
+        // Guardar datos del usuario en Firestore
+        await db.collection('users').doc(user.uid).set({
+            username,
+            email,
+            profilePicUrl
         });
+
+        alert('Registro exitoso. Inicia sesión.');
+        registerScreen.classList.add('hidden');
+        loginScreen.classList.remove('hidden');
+    } catch (error) {
+        alert(`Error: ${error.message}`);
+    }
 });
 
 // Inicio de sesión
-loginBtn.addEventListener('click', () => {
-    console.log("Intentando iniciar sesión..."); // Mensaje de depuración
-    const email = emailInput.value;
-    const password = passwordInput.value;
+loginForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const email = document.getElementById('email').value;
+    const password = document.getElementById('password').value;
 
-    if (!email || !password) {
-        console.log("Correo o contraseña vacíos"); // Mensaje de depuración
-        showAuthMessage("Por favor, ingresa un correo electrónico y una contraseña.", true);
-        return;
+    try {
+        const userCredential = await auth.signInWithEmailAndPassword(email, password);
+        const user = userCredential.user;
+
+        // Obtener datos del usuario desde Firestore
+        const userDoc = await db.collection('users').doc(user.uid).get();
+        if (userDoc.exists) {
+            const userData = userDoc.data();
+            profileUsername.textContent = userData.username;
+            profileImage.src = userData.profilePicUrl;
+            loginScreen.classList.add('hidden');
+            profileScreen.classList.remove('hidden');
+        }
+    } catch (error) {
+        alert(`Error: ${error.message}`);
     }
-
-    auth.signInWithEmailAndPassword(email, password)
-        .then((userCredential) => {
-            console.log("Inicio de sesión exitoso:", userCredential.user); // Mensaje de depuración
-            showAuthMessage("Inicio de sesión exitoso. Redirigiendo al chat...");
-            setTimeout(() => {
-                authContainer.classList.add('hidden');
-                chatContainer.classList.remove('hidden');
-                loadMessages();
-            }, 2000);
-        })
-        .catch((error) => {
-            console.error("Error durante el inicio de sesión:", error); // Mensaje de depuración
-            showAuthMessage(`Error durante el inicio de sesión: ${error.message}`, true);
-        });
 });
 
 // Cerrar sesión
-logoutBtn.addEventListener('click', () => {
+logoutButton.addEventListener('click', () => {
     auth.signOut().then(() => {
-        chatContainer.classList.add('hidden');
-        authContainer.classList.remove('hidden');
+        profileScreen.classList.add('hidden');
+        loginScreen.classList.remove('hidden');
     });
 });
 
-// Cargar mensajes
-function loadMessages() {
-    db.collection('messages').orderBy('timestamp').onSnapshot(snapshot => {
-        chatMessages.innerHTML = '';
-        snapshot.forEach(doc => {
-            const message = doc.data();
-            addMessageToChat(message.text, message.imageUrl);
+// Verificar si el usuario ya está autenticado
+auth.onAuthStateChanged((user) => {
+    if (user) {
+        db.collection('users').doc(user.uid).get().then((doc) => {
+            if (doc.exists) {
+                const userData = doc.data();
+                profileUsername.textContent = userData.username;
+                profileImage.src = userData.profilePicUrl;
+                loginScreen.classList.add('hidden');
+                profileScreen.classList.remove('hidden');
+            }
         });
-        chatMessages.scrollTop = chatMessages.scrollHeight;
-    });
-}
-
-// Enviar mensaje
-sendBtn.addEventListener('click', () => {
-    const text = messageInput.value;
-    const file = imageInput.files[0];
-
-    if (text || file) {
-        if (file) {
-            uploadImageToCloudinary(file).then(imageUrl => {
-                sendMessage(text, imageUrl);
-            });
-        } else {
-            sendMessage(text);
-        }
     }
 });
-
-// Subir imagen a Cloudinary
-function uploadImageToCloudinary(file) {
-    const formData = new FormData();
-    formData.append('file', file);
-    formData.append('upload_preset', uploadPreset);
-
-    return fetch(`https://api.cloudinary.com/v1_1/${cloudinary.config().cloud_name}/image/upload`, {
-        method: 'POST',
-        body: formData
-    })
-    .then(response => response.json())
-    .then(data => {
-        console.log("Imagen subida a Cloudinary:", data.secure_url); // Mensaje de depuración
-        return data.secure_url;
-    })
-    .catch(error => {
-        console.error("Error al subir la imagen:", error); // Mensaje de depuración
-        return null;
-    });
-}
-
-// Enviar mensaje a Firestore
-function sendMessage(text, imageUrl = null) {
-    const user = auth.currentUser.email;
-    db.collection('messages').add({
-        user,
-        text,
-        imageUrl,
-        timestamp: firebase.firestore.FieldValue.serverTimestamp()
-    });
-    messageInput.value = '';
-    imageInput.value = '';
-}
-
-// Mostrar mensaje en el chat
-function addMessageToChat(text, imageUrl = null) {
-    const messageElement = document.createElement('div');
-    messageElement.classList.add('message');
-    messageElement.innerHTML = `
-        <strong>${auth.currentUser.email}:</strong> ${text}
-        ${imageUrl ? `<img src="${imageUrl}" alt="Imagen">` : ''}
-    `;
-    chatMessages.appendChild(messageElement);
-}
