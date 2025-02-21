@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mi Red Social</title>
+    <title>Iniciar Sesión - Mi Red Social</title>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -16,30 +16,7 @@
                 <input type="password" id="login-password" placeholder="Contraseña" required>
                 <button type="submit">Iniciar Sesión</button>
             </form>
-            <p>¿No tienes una cuenta? <a href="#" id="register-link">Regístrate aquí</a></p>
-        </div>
-
-        <!-- Pantalla de Registro -->
-        <div id="register-screen" class="screen hidden">
-            <h1>Regístrate</h1>
-            <form id="register-form">
-                <input type="text" id="register-username" placeholder="Nombre de usuario" required>
-                <input type="email" id="register-email" placeholder="Correo electrónico" required>
-                <input type="password" id="register-password" placeholder="Contraseña" required>
-                <input type="password" id="register-confirm-password" placeholder="Confirmar contraseña" required>
-                <button type="submit">Registrarse</button>
-            </form>
-            <p>¿Ya tienes una cuenta? <a href="#" id="login-link">Inicia sesión aquí</a></p>
-        </div>
-
-        <!-- Pantalla de Perfil -->
-        <div id="profile-screen" class="screen hidden">
-            <h1>Mi Perfil</h1>
-            <div class="profile-info">
-                <img id="profile-image" src="" alt="Foto de perfil">
-                <h2 id="profile-username"></h2>
-            </div>
-            <button id="logout-button">Cerrar Sesión</button>
+            <p>¿No tienes una cuenta? <a href="register.html" target="_blank">Regístrate aquí</a></p>
         </div>
     </div>
 
@@ -47,8 +24,7 @@
     <script src="https://www.gstatic.com/firebasejs/10.1.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.1.0/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.1.0/firebase-firestore.js"></script>
-    <!-- Cloudinary SDK -->
-    <script src="https://upload-widget.cloudinary.com/global/all.js"></script>
+    <!-- Script de la página de inicio de sesión -->
     <script src="script.js"></script>
 </body>
 </html>
