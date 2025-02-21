@@ -67,24 +67,26 @@ const uploadImageToCloudinary = async (file) => {
 // Registro de usuario
 registerForm.addEventListener('submit', async (e) => {
     e.preventDefault();
-    const username = document.getElementById('username').value;
-    const email = document.getElementById('email').value;
-    const password = document.getElementById('password').value;
-    const profilePic = document.getElementById('profile-pic').files[0];
+    const username = document.getElementById('register-username').value;
+    const email = document.getElementById('register-email').value;
+    const password = document.getElementById('register-password').value;
+    const confirmPassword = document.getElementById('register-confirm-password').value;
+
+    // Validar que las contraseñas coincidan
+    if (password !== confirmPassword) {
+        alert('Las contraseñas no coinciden.');
+        return;
+    }
 
     try {
         // Crear usuario en Firebase Authentication
         const userCredential = await auth.createUserWithEmailAndPassword(email, password);
         const user = userCredential.user;
 
-        // Subir la imagen a Cloudinary
-        const profilePicUrl = await uploadImageToCloudinary(profilePic);
-
         // Guardar datos del usuario en Firestore
         await db.collection('users').doc(user.uid).set({
             username,
-            email,
-            profilePicUrl
+            email
         });
 
         alert('Registro exitoso. Inicia sesión.');
@@ -98,8 +100,8 @@ registerForm.addEventListener('submit', async (e) => {
 // Inicio de sesión
 loginForm.addEventListener('submit', async (e) => {
     e.preventDefault();
-    const email = document.getElementById('email').value;
-    const password = document.getElementById('password').value;
+    const email = document.getElementById('login-email').value;
+    const password = document.getElementById('login-password').value;
 
     try {
         const userCredential = await auth.signInWithEmailAndPassword(email, password);
@@ -110,7 +112,6 @@ loginForm.addEventListener('submit', async (e) => {
         if (userDoc.exists) {
             const userData = userDoc.data();
             profileUsername.textContent = userData.username;
-            profileImage.src = userData.profilePicUrl;
             loginScreen.classList.add('hidden');
             profileScreen.classList.remove('hidden');
         }
@@ -134,7 +135,6 @@ auth.onAuthStateChanged((user) => {
             if (doc.exists) {
                 const userData = doc.data();
                 profileUsername.textContent = userData.username;
-                profileImage.src = userData.profilePicUrl;
                 loginScreen.classList.add('hidden');
                 profileScreen.classList.remove('hidden');
             }
