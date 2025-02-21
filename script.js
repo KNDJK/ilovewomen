@@ -17,8 +17,13 @@ const db = firebase.firestore();
 // Elementos del DOM
 const loginScreen = document.getElementById('login-screen');
 const registerScreen = document.getElementById('register-screen');
+const chatScreen = document.getElementById('chat-screen');
 const loginForm = document.getElementById('login-form');
 const registerForm = document.getElementById('register-form');
+const chatForm = document.getElementById('chat-form');
+const chatBox = document.getElementById('chat-box');
+const messageInput = document.getElementById('message-input');
+const logoutButton = document.getElementById('logout-button');
 
 // Mostrar pantalla de registro
 document.getElementById('register-link').addEventListener('click', (e) => {
@@ -77,9 +82,64 @@ loginForm.addEventListener('submit', async (e) => {
         const userCredential = await auth.signInWithEmailAndPassword(email, password);
         const user = userCredential.user;
 
-        // Redirigir a la página del chat
-        window.location.href = "chat.html";
+        // Mostrar pantalla del chat
+        loginScreen.classList.add('hidden');
+        chatScreen.classList.remove('hidden');
     } catch (error) {
         alert(`Error: ${error.message}`);
+    }
+});
+
+// Escuchar mensajes en tiempo real
+db.collection('messages').orderBy('timestamp').onSnapshot((snapshot) => {
+    chatBox.innerHTML = ''; // Limpiar el chat
+    snapshot.forEach((doc) => {
+        const message = doc.data();
+        const messageElement = document.createElement('div');
+        messageElement.classList.add('message');
+        messageElement.innerHTML = `<strong>${message.username}:</strong> ${message.text}`;
+        chatBox.appendChild(messageElement);
+    });
+    chatBox.scrollTop = chatBox.scrollHeight; // Desplazar al final
+});
+
+// Enviar mensaje
+chatForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const messageText = messageInput.value.trim();
+
+    if (messageText === '') return;
+
+    const user = auth.currentUser;
+    if (user) {
+        const userDoc = await db.collection('users').doc(user.uid).get();
+        const username = userDoc.data().username;
+
+        await db.collection('messages').add({
+            username,
+            text: messageText,
+            timestamp: firebase.firestore.FieldValue.serverTimestamp()
+        });
+
+        messageInput.value = ''; // Limpiar el campo de texto
+    }
+});
+
+// Cerrar sesión
+logoutButton.addEventListener('click', () => {
+    auth.signOut().then(() => {
+        chatScreen.classList.add('hidden');
+        loginScreen.classList.remove('hidden');
+    });
+});
+
+// Verificar si el usuario ya está autenticado
+auth.onAuthStateChanged((user) => {
+    if (user) {
+        loginScreen.classList.add('hidden');
+        chatScreen.classList.remove('hidden');
+    } else {
+        chatScreen.classList.add('hidden');
+        loginScreen.classList.remove('hidden');
     }
 });
