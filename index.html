@@ -3,14 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Iniciar Sesión - Mi Red Social</title>
+    <title>Chat Global - Mi Red Social</title>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
     <div class="container">
         <!-- Pantalla de Inicio de Sesión -->
         <div id="login-screen" class="screen">
-            <h1>Bienvenido a Mi Red Social</h1>
+            <h1>Bienvenido al Chat Global</h1>
             <form id="login-form">
                 <input type="email" id="login-email" placeholder="Correo electrónico" required>
                 <input type="password" id="login-password" placeholder="Contraseña" required>
@@ -27,10 +27,22 @@
                 <input type="email" id="register-email" placeholder="Correo electrónico" required>
                 <input type="password" id="register-password" placeholder="Contraseña" required>
                 <input type="password" id="register-confirm-password" placeholder="Confirmar contraseña" required>
-                <input type="file" id="profile-pic" accept="image/*">
                 <button type="submit">Registrarse</button>
             </form>
             <p>¿Ya tienes una cuenta? <a href="#" id="login-link">Inicia sesión aquí</a></p>
+        </div>
+
+        <!-- Pantalla del Chat -->
+        <div id="chat-screen" class="screen hidden">
+            <h1>Chat Global</h1>
+            <div id="chat-box">
+                <!-- Los mensajes se cargarán aquí -->
+            </div>
+            <form id="chat-form">
+                <input type="text" id="message-input" placeholder="Escribe un mensaje..." required>
+                <button type="submit">Enviar</button>
+            </form>
+            <button id="logout-button">Cerrar Sesión</button>
         </div>
     </div>
 
@@ -38,7 +50,7 @@
     <script src="https://www.gstatic.com/firebasejs/10.1.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.1.0/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.1.0/firebase-firestore.js"></script>
-    <!-- Script de la página de inicio de sesión y registro -->
+    <!-- Script de la aplicación -->
     <script src="script.js"></script>
 </body>
 </html>
