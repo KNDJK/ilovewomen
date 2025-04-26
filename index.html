@@ -4,11 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Amino Style - Comunidades</title>
-    <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <!-- Barra de navegación superior -->
+    <!-- Barra de navegación -->
     <nav class="navbar">
         <div class="navbar-brand">
             <i class="fas fa-users"></i>
@@ -22,36 +22,63 @@
             <a href="#"><i class="fas fa-home"></i></a>
             <a href="#"><i class="fas fa-bell"></i></a>
             <a href="#"><i class="fas fa-user"></i></a>
+            <button class="menu-toggle" id="menuToggle"><i class="fas fa-bars"></i></button>
         </div>
     </nav>
 
     <!-- Contenido principal -->
     <div class="container">
-        <div class="sidebar">
+        <!-- Sidebar (oculto en móvil) -->
+        <div class="sidebar" id="sidebar">
             <h3>Mis Comunidades</h3>
             <ul>
                 <li><a href="#"><i class="fas fa-gamepad"></i> Juegos</a></li>
                 <li><a href="#"><i class="fas fa-music"></i> Música</a></li>
                 <li><a href="#"><i class="fas fa-paint-brush"></i> Arte</a></li>
+                <li><a href="#"><i class="fas fa-book"></i> Lectura</a></li>
+                <li><a href="#"><i class="fas fa-film"></i> Cine</a></li>
             </ul>
         </div>
 
+        <!-- Main Content -->
         <div class="main-content">
             <div class="post">
                 <div class="post-header">
                     <img src="https://via.placeholder.com/40" alt="Usuario">
-                    <span>Usuario123</span>
+                    <div>
+                        <span class="username">Usuario123</span>
+                        <span class="post-time">Hace 2 horas</span>
+                    </div>
                 </div>
                 <div class="post-content">
                     <p>¡Hola a todos! ¿Qué opinan de este nuevo juego? 🎮</p>
-                    <img src="https://via.placeholder.com/400x200" alt="Juego">
+                    <img src="https://via.placeholder.com/600x300" alt="Juego">
                 </div>
                 <div class="post-actions">
-                    <button><i class="fas fa-heart"></i> Me gusta</button>
-                    <button><i class="fas fa-comment"></i> Comentar</button>
+                    <button><i class="far fa-heart"></i> <span>Me gusta</span></button>
+                    <button><i class="far fa-comment"></i> <span>Comentar</span></button>
+                    <button><i class="fas fa-share"></i> <span>Compartir</span></button>
+                </div>
+                <div class="post-comments">
+                    <div class="comment">
+                        <img src="https://via.placeholder.com/30" alt="Usuario">
+                        <div>
+                            <span class="username">GamerPro</span>
+                            <p>¡Se ve increíble! ¿Ya lo probaste?</p>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
+    </div>
+
+    <!-- Bottom Navigation (solo móvil) -->
+    <div class="bottom-nav">
+        <a href="#"><i class="fas fa-home"></i></a>
+        <a href="#"><i class="fas fa-search"></i></a>
+        <a href="#"><i class="fas fa-plus-circle"></i></a>
+        <a href="#"><i class="fas fa-bell"></i></a>
+        <a href="#"><i class="fas fa-user"></i></a>
     </div>
 
     <script src="script.js"></script>
