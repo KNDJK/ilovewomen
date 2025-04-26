@@ -1,65 +1,8 @@
-/* --- Header de Amino (Gradiente Azul) --- */
-.amino-header {
-    background: linear-gradient(135deg, #00AFF0, #00D4FF); /* Gradiente de Amino */
-    color: white;
-}
-
-.header-title h1 {
-    color: white;
-    text-shadow: 0 1px 3px rgba(0,0,0,0.2);
-}
-
-.header-tabs {
-    background: white;
-    border-radius: 15px 15px 0 0;
-    margin: 0 10px;
-}
-
-/* --- Banner con Título (Como en el Enlace) --- */
-.community-banner {
-    position: relative;
-    margin-top: 70px;
-}
-
-.community-banner img {
-    width: 100%;
-    height: 180px;
-    object-fit: cover;
-}
-
-.banner-title {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    background: linear-gradient(transparent, rgba(0,0,0,0.7));
-    padding: 20px;
-    color: white;
-}
-
-/* --- Posts (Sombra y Bordes Exactos) --- */
-.post {
-    background: white;
-    border-radius: 12px;
-    margin: 10px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-    border: 1px solid #f0f0f0;
-}
-
-.featured-post {
-    border: 2px solid #00AFF0;
-}
-
-/* --- Navbar Inferior (Íconos Exactos) --- */
-.amino-navbar {
-    background: white;
-    border-top: 1px solid #e0e0e0;
-}
-
-.amino-navbar a.active {
-    color: #00AFF0;
-}
-
-.amino-navbar a i {
-    font-size: 1.5rem;
-}
+<!-- Banner con Título (como en Fortnite Español) -->
+<div class="community-banner">
+    <img src="https://via.placeholder.com/1200x300/00AFF0/FFFFFF?text=Banner+Fortnite" alt="Banner">
+    <div class="banner-title">
+        <h2>Fortnite Español</h2>
+        <p>125K miembros · 5K en línea</p>
+    </div>
+</div>
