@@ -3,36 +3,57 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chat Global</title>
+    <title>Amino Style - Comunidades</title>
     <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body>
-    <!-- Ventana flotante para ingresar el nombre -->
-    <div id="name-modal" class="modal">
-        <div class="modal-content">
-            <h2>Bienvenido al Chat Global</h2>
-            <p>Por favor, ingresa tu nombre para comenzar:</p>
-            <input type="text" id="username-input" placeholder="Tu nombre" required>
-            <button id="start-chat-button">Comenzar</button>
+    <!-- Barra de navegación superior -->
+    <nav class="navbar">
+        <div class="navbar-brand">
+            <i class="fas fa-users"></i>
+            <span>Amino Style</span>
+        </div>
+        <div class="navbar-search">
+            <input type="text" placeholder="Buscar comunidades...">
+            <button><i class="fas fa-search"></i></button>
+        </div>
+        <div class="navbar-actions">
+            <a href="#"><i class="fas fa-home"></i></a>
+            <a href="#"><i class="fas fa-bell"></i></a>
+            <a href="#"><i class="fas fa-user"></i></a>
+        </div>
+    </nav>
+
+    <!-- Contenido principal -->
+    <div class="container">
+        <div class="sidebar">
+            <h3>Mis Comunidades</h3>
+            <ul>
+                <li><a href="#"><i class="fas fa-gamepad"></i> Juegos</a></li>
+                <li><a href="#"><i class="fas fa-music"></i> Música</a></li>
+                <li><a href="#"><i class="fas fa-paint-brush"></i> Arte</a></li>
+            </ul>
+        </div>
+
+        <div class="main-content">
+            <div class="post">
+                <div class="post-header">
+                    <img src="https://via.placeholder.com/40" alt="Usuario">
+                    <span>Usuario123</span>
+                </div>
+                <div class="post-content">
+                    <p>¡Hola a todos! ¿Qué opinan de este nuevo juego? 🎮</p>
+                    <img src="https://via.placeholder.com/400x200" alt="Juego">
+                </div>
+                <div class="post-actions">
+                    <button><i class="fas fa-heart"></i> Me gusta</button>
+                    <button><i class="fas fa-comment"></i> Comentar</button>
+                </div>
+            </div>
         </div>
     </div>
 
-    <!-- Contenedor del chat -->
-    <div id="chat-container" class="hidden">
-        <h1>Chat Global</h1>
-        <div id="chat-box">
-            <!-- Los mensajes se cargarán aquí -->
-        </div>
-        <form id="chat-form">
-            <input type="text" id="message-input" placeholder="Escribe un mensaje..." required>
-            <button type="submit">Enviar</button>
-        </form>
-    </div>
-
-    <!-- Firebase SDK -->
-    <script src="https://www.gstatic.com/firebasejs/10.1.0/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.1.0/firebase-firestore.js"></script>
-    <!-- Script de la aplicación -->
     <script src="script.js"></script>
 </body>
 </html>
