@@ -3,64 +3,84 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Amino Style</title>
+    <title>Fortnite Español - Amino</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <!-- Header tipo Amino -->
+    <!-- Header de Amino (igual al enlace) -->
     <header class="amino-header">
-        <div class="header-left">
-            <button class="back-button"><i class="fas fa-arrow-left"></i></button>
-            <h1 class="community-name">Comunidad de Juegos</h1>
-        </div>
-        <div class="header-right">
+        <div class="header-top">
+            <button class="back-button"><i class="fas fa-chevron-left"></i></button>
+            <div class="header-title">
+                <img src="https://via.placeholder.com/30" alt="Logo Fortnite" class="community-icon">
+                <h1>Fortnite Español</h1>
+            </div>
             <button class="search-button"><i class="fas fa-search"></i></button>
-            <button class="menu-button"><i class="fas fa-ellipsis-h"></i></button>
         </div>
+        <nav class="header-tabs">
+            <a href="#" class="active">Inicio</a>
+            <a href="#">Posts</a>
+            <a href="#">Wiki</a>
+            <a href="#">Miembros</a>
+            <a href="#">Chats</a>
+        </nav>
     </header>
 
-    <!-- Contenido principal (como en Amino) -->
-    <main class="amino-main">
-        <!-- Stories (Historias) -->
-        <div class="stories-container">
-            <div class="story">
-                <div class="story-avatar">
-                    <img src="https://via.placeholder.com/60" alt="Usuario">
-                </div>
-                <span class="story-username">User123</span>
-            </div>
-            <!-- Más stories... -->
-        </div>
+    <!-- Banner de la comunidad (como en Amino) -->
+    <div class="community-banner">
+        <img src="https://via.placeholder.com/1200x200" alt="Banner Fortnite">
+    </div>
 
-        <!-- Posts Feed -->
-        <div class="post">
+    <!-- Contenido principal (feed de posts) -->
+    <main class="amino-feed">
+        <!-- Post destacado (como en Amino) -->
+        <div class="featured-post">
             <div class="post-header">
-                <img src="https://via.placeholder.com/40" alt="Usuario" class="post-avatar">
-                <div class="post-user-info">
-                    <span class="username">GamerPro</span>
-                    <span class="post-time">Hace 1h · <i class="fas fa-globe-americas"></i></span>
+                <img src="https://via.placeholder.com/40" alt="Admin" class="post-avatar">
+                <div class="post-author">
+                    <span class="username">Admin</span>
+                    <span class="post-time">Publicado por líder</span>
                 </div>
             </div>
             <div class="post-content">
-                <p>¡Acabo de terminar este juego! ¿Alguien más lo ha jugado? 🎮</p>
-                <img src="https://via.placeholder.com/300x200" alt="Juego" class="post-image">
+                <h3>¡Nuevo parche de Fortnite disponible!</h3>
+                <p>Descubre todas las novedades de la temporada 5...</p>
+                <img src="https://via.placeholder.com/600x300" alt="Fortnite Patch" class="post-image">
             </div>
-            <div class="post-actions">
-                <button><i class="fas fa-heart"></i> 125</button>
-                <button><i class="fas fa-comment"></i> 23</button>
-                <button><i class="fas fa-share"></i></button>
+            <div class="post-stats">
+                <span><i class="fas fa-heart"></i> 1.2K</span>
+                <span><i class="fas fa-comment"></i> 348</span>
+            </div>
+        </div>
+
+        <!-- Post normal -->
+        <div class="post">
+            <div class="post-header">
+                <img src="https://via.placeholder.com/40" alt="Usuario" class="post-avatar">
+                <div class="post-author">
+                    <span class="username">ProPlayer99</span>
+                    <span class="post-time">Hace 3 horas</span>
+                </div>
+            </div>
+            <div class="post-content">
+                <p>¿Alguien quiere jugar en squad? Dejo mi ID: ProPlayer99#1234</p>
+                <div class="post-actions">
+                    <button><i class="fas fa-heart"></i> 45</button>
+                    <button><i class="fas fa-comment"></i> 12</button>
+                    <button><i class="fas fa-share"></i></button>
+                </div>
             </div>
         </div>
     </main>
 
-    <!-- Bottom Navigation Bar (ÍCONOS IDÉNTICOS A AMINO) -->
-    <nav class="amino-tabbar">
-        <a href="#" class="tab-active"><i class="fas fa-home"></i></a>
-        <a href="#"><i class="fas fa-comment-dots"></i></a>
-        <a href="#"><i class="fas fa-compass"></i></a>
-        <a href="#"><i class="fas fa-bell"></i></a>
-        <a href="#"><i class="fas fa-user"></i></a>
+    <!-- Bottom Navbar (IDÉNTICO a Amino) -->
+    <nav class="amino-navbar">
+        <a href="#" class="active"><i class="fas fa-home"></i><span>Inicio</span></a>
+        <a href="#"><i class="fas fa-comment-dots"></i><span>Chats</span></a>
+        <a href="#"><i class="fas fa-compass"></i><span>Descubrir</span></a>
+        <a href="#"><i class="fas fa-bell"></i><span>Notificaciones</span></a>
+        <a href="#"><i class="fas fa-user"></i><span>Perfil</span></a>
     </nav>
 
     <script src="script.js"></script>
