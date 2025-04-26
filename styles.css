@@ -1,218 +1,65 @@
-/* Estilos exactos de Amino */
-:root {
-    --amino-blue: #00AFF0; /* Color principal de Amino */
-    --amino-header-bg: #FFFFFF;
-    --amino-tabbar-bg: #FFFFFF;
-    --amino-post-bg: #FFFFFF;
-    --amino-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-}
-
-body {
-    font-family: 'Segoe UI', Roboto, sans-serif;
-    margin: 0;
-    padding: 0;
-    background-color: #F7F7F7;
-    color: #333;
-    padding-bottom: 60px; /* Para el navbar inferior */
-}
-
-/* Header idéntico al de Amino */
+/* --- Header de Amino (Gradiente Azul) --- */
 .amino-header {
-    background-color: var(--amino-header-bg);
-    position: fixed;
-    width: 100%;
-    top: 0;
-    z-index: 1000;
-    box-shadow: var(--amino-shadow);
-}
-
-.header-top {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 10px 15px;
-}
-
-.header-title {
-    display: flex;
-    align-items: center;
-    gap: 10px;
+    background: linear-gradient(135deg, #00AFF0, #00D4FF); /* Gradiente de Amino */
+    color: white;
 }
 
 .header-title h1 {
-    font-size: 1.2rem;
-    font-weight: 600;
-    margin: 0;
+    color: white;
+    text-shadow: 0 1px 3px rgba(0,0,0,0.2);
 }
 
-.community-icon {
-    width: 30px;
-    height: 30px;
-    border-radius: 50%;
-    object-fit: cover;
-}
-
-.back-button, .search-button {
-    background: none;
-    border: none;
-    font-size: 1.2rem;
-    color: #555;
-    padding: 5px;
-}
-
-/* Pestañas de navegación (como en Amino) */
 .header-tabs {
-    display: flex;
-    border-bottom: 1px solid #EEE;
-    overflow-x: auto;
+    background: white;
+    border-radius: 15px 15px 0 0;
+    margin: 0 10px;
 }
 
-.header-tabs a {
-    padding: 12px 15px;
-    text-decoration: none;
-    color: #555;
-    font-size: 0.9rem;
-    white-space: nowrap;
+/* --- Banner con Título (Como en el Enlace) --- */
+.community-banner {
+    position: relative;
+    margin-top: 70px;
 }
 
-.header-tabs a.active {
-    color: var(--amino-blue);
-    border-bottom: 2px solid var(--amino-blue);
-}
-
-/* Banner de la comunidad */
 .community-banner img {
     width: 100%;
-    height: 150px;
+    height: 180px;
     object-fit: cover;
-    margin-top: 70px; /* Para el header fijo */
 }
 
-/* Feed de posts */
-.amino-feed {
-    padding: 15px;
-    margin-top: 10px;
+.banner-title {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: linear-gradient(transparent, rgba(0,0,0,0.7));
+    padding: 20px;
+    color: white;
 }
 
-.featured-post, .post {
-    background-color: var(--amino-post-bg);
-    border-radius: 10px;
-    margin-bottom: 15px;
-    padding: 15px;
-    box-shadow: var(--amino-shadow);
+/* --- Posts (Sombra y Bordes Exactos) --- */
+.post {
+    background: white;
+    border-radius: 12px;
+    margin: 10px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    border: 1px solid #f0f0f0;
 }
 
 .featured-post {
-    border: 1px solid var(--amino-blue);
+    border: 2px solid #00AFF0;
 }
 
-.post-header {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    margin-bottom: 10px;
-}
-
-.post-avatar {
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    object-fit: cover;
-}
-
-.post-author {
-    display: flex;
-    flex-direction: column;
-}
-
-.username {
-    font-weight: 500;
-    font-size: 0.95rem;
-}
-
-.post-time {
-    font-size: 0.75rem;
-    color: #777;
-}
-
-.post-content {
-    margin: 10px 0;
-}
-
-.post-content h3 {
-    margin: 5px 0;
-    font-size: 1.1rem;
-}
-
-.post-image {
-    width: 100%;
-    border-radius: 8px;
-    margin-top: 10px;
-    max-height: 300px;
-    object-fit: cover;
-}
-
-.post-stats {
-    display: flex;
-    gap: 15px;
-    color: #777;
-    font-size: 0.8rem;
-    margin-top: 10px;
-}
-
-.post-actions {
-    display: flex;
-    gap: 15px;
-    margin-top: 15px;
-}
-
-.post-actions button {
-    background: none;
-    border: none;
-    color: #555;
-    font-size: 0.9rem;
-    display: flex;
-    align-items: center;
-    gap: 5px;
-}
-
-/* Navbar inferior (IDÉNTICO a Amino) */
+/* --- Navbar Inferior (Íconos Exactos) --- */
 .amino-navbar {
-    display: flex;
-    justify-content: space-around;
-    align-items: center;
-    background-color: var(--amino-tabbar-bg);
-    position: fixed;
-    bottom: 0;
-    width: 100%;
-    padding: 10px 0;
-    box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.1);
-    z-index: 1000;
-}
-
-.amino-navbar a {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    text-decoration: none;
-    color: #888;
-    font-size: 0.7rem;
-    gap: 3px;
-}
-
-.amino-navbar a i {
-    font-size: 1.4rem;
+    background: white;
+    border-top: 1px solid #e0e0e0;
 }
 
 .amino-navbar a.active {
-    color: var(--amino-blue);
+    color: #00AFF0;
 }
 
-/* Responsive para desktop */
-@media (min-width: 768px) {
-    .amino-feed {
-        max-width: 600px;
-        margin-left: auto;
-        margin-right: auto;
-    }
+.amino-navbar a i {
+    font-size: 1.5rem;
 }
