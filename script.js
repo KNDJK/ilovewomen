@@ -1,32 +1,23 @@
-document.addEventListener('DOMContentLoaded', function() {
-    // Toggle del menú en móvil
-    const menuToggle = document.getElementById('menuToggle');
-    const sidebar = document.getElementById('sidebar');
-
-    menuToggle.addEventListener('click', () => {
-        sidebar.classList.toggle('active');
-    });
-
-    // Función de "Me gusta"
-    const likeButtons = document.querySelectorAll('.post-actions button:first-child');
-    
-    likeButtons.forEach(button => {
-        button.addEventListener('click', () => {
-            const icon = button.querySelector('i');
+// Efecto de "Me gusta" (como en Amino)
+document.querySelectorAll('.post-actions button').forEach(button => {
+    button.addEventListener('click', function() {
+        if (this.querySelector('i').classList.contains('fa-heart')) {
+            const icon = this.querySelector('i');
             if (icon.classList.contains('far')) {
                 icon.classList.replace('far', 'fas');
-                icon.style.color = 'red';
+                this.style.color = '#FF2D55'; // Rojo de Amino al dar like
             } else {
                 icon.classList.replace('fas', 'far');
-                icon.style.color = '';
+                this.style.color = '#555';
             }
-        });
-    });
-
-    // Cerrar sidebar al hacer clic fuera (solo móvil)
-    document.addEventListener('click', (e) => {
-        if (window.innerWidth <= 768 && !e.target.closest('#sidebar') && !e.target.closest('#menuToggle')) {
-            sidebar.classList.remove('active');
         }
     });
+});
+
+// Simular carga de más posts
+window.addEventListener('scroll', () => {
+    if ((window.innerHeight + window.scrollY) >= document.body.offsetHeight - 500) {
+        console.log("Cargando más posts... (Simulación)");
+        // Aquí iría la lógica para cargar más contenido
+    }
 });
