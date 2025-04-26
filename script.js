@@ -1,15 +1,32 @@
-// Ejemplo: Añadir funcionalidad de "Me gusta"
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', function() {
+    // Toggle del menú en móvil
+    const menuToggle = document.getElementById('menuToggle');
+    const sidebar = document.getElementById('sidebar');
+
+    menuToggle.addEventListener('click', () => {
+        sidebar.classList.toggle('active');
+    });
+
+    // Función de "Me gusta"
     const likeButtons = document.querySelectorAll('.post-actions button:first-child');
     
     likeButtons.forEach(button => {
         button.addEventListener('click', () => {
-            button.classList.toggle('liked');
-            if (button.classList.contains('liked')) {
-                button.innerHTML = '<i class="fas fa-heart" style="color:red;"></i> Me gusta';
+            const icon = button.querySelector('i');
+            if (icon.classList.contains('far')) {
+                icon.classList.replace('far', 'fas');
+                icon.style.color = 'red';
             } else {
-                button.innerHTML = '<i class="fas fa-heart"></i> Me gusta';
+                icon.classList.replace('fas', 'far');
+                icon.style.color = '';
             }
         });
+    });
+
+    // Cerrar sidebar al hacer clic fuera (solo móvil)
+    document.addEventListener('click', (e) => {
+        if (window.innerWidth <= 768 && !e.target.closest('#sidebar') && !e.target.closest('#menuToggle')) {
+            sidebar.classList.remove('active');
+        }
     });
 });
