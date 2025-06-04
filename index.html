@@ -144,6 +144,11 @@
             font-weight: 300;
         }
         
+        .message-status {
+            margin-left: 5px;
+            font-size: 0.8em;
+        }
+        
         .message-content {
             line-height: 1.4;
         }
@@ -295,6 +300,19 @@
             0% { transform: translateY(0) rotate(0deg); opacity: 1; }
             100% { transform: translateY(500px) rotate(360deg); opacity: 0; }
         }
+
+        /* Indicador "escribiendo" */
+        .typing-indicator {
+            background-color: var(--light-color);
+            padding: 8px 15px;
+            border-radius: 15px;
+            margin-bottom: 5px;
+            display: inline-block;
+            font-style: italic;
+            color: var(--dark-color);
+            opacity: 0.8;
+            font-size: 0.9em;
+        }
     </style>
 </head>
 <body>
@@ -338,6 +356,7 @@
         firebase.initializeApp(firebaseConfig);
         const database = firebase.database();
         const messagesRef = database.ref('messages');
+        const typingRef = database.ref('typing');
 
         // Elementos del DOM
         const usernameInput = document.getElementById('username-input');
@@ -348,14 +367,95 @@
         
         let username = '';
         let messageCount = 0;
+        let isTyping = false;
+        let lastTypingTime = 0;
+        let typingTimeout;
 
         // Escuchar nuevos mensajes
-        messagesRef.limitToLast(100).on('child_added', (snapshot) => {
+        messagesRef.orderByChild('timestamp').limitToLast(100).on('child_added', (snapshot) => {
             const data = snapshot.val();
-            if (data.sender !== username || data.type === 'system') {
-                addMessage(data.sender, data.content, data.type);
+            displayMessage(data, snapshot.key);
+        });
+
+        // Escuchar estado "escribiendo"
+        typingRef.on('child_added', (snapshot) => {
+            const typer = snapshot.key;
+            if (typer !== username) {
+                showTypingIndicator(typer);
             }
         });
+
+        typingRef.on('child_removed', (snapshot) => {
+            hideTypingIndicator(snapshot.key);
+        });
+
+        // Función para mostrar mensajes
+        function displayMessage(data, messageId) {
+            // Verificar si el mensaje ya existe
+            if (document.getElementById(`msg-${messageId}`)) return;
+            
+            const isCurrentUser = data.sender === username;
+            const messageType = isCurrentUser ? 'user-message' : 
+                              data.type === 'system-message' ? 'system-message' : 'other-message';
+            
+            const messageElement = document.createElement('div');
+            messageElement.className = `message ${messageType}`;
+            messageElement.id = `msg-${messageId}`;
+            
+            const time = formatTime(data.timestamp);
+            const status = isCurrentUser ? getMessageStatus(data) : '';
+            
+            messageElement.innerHTML = `
+                <div class="message-sender">
+                    ${data.sender}
+                    <span class="message-time">${time} ${status}</span>
+                </div>
+                <div class="message-content">${data.content}</div>
+            `;
+            
+            chatMessages.appendChild(messageElement);
+            
+            // Animación y scroll
+            setTimeout(() => {
+                messageElement.style.opacity = 1;
+                messageElement.style.transform = 'translateY(0)';
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            }, 50);
+        }
+
+        // Función para formato de hora
+        function formatTime(timestamp) {
+            const date = new Date(timestamp);
+            return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        }
+
+        // Función para estado del mensaje (✓✓)
+        function getMessageStatus(data) {
+            if (!data.delivered) return '<span class="message-status">✓</span>';
+            if (!data.read) return '<span class="message-status">✓✓</span>';
+            return '<span class="message-status" style="color:blue">✓✓</span>';
+        }
+
+        // Mostrar indicador "escribiendo"
+        function showTypingIndicator(typer) {
+            let indicator = document.getElementById('typing-indicator');
+            if (!indicator) {
+                indicator = document.createElement('div');
+                indicator.id = 'typing-indicator';
+                indicator.className = 'typing-indicator';
+                chatMessages.appendChild(indicator);
+            }
+            indicator.textContent = `${typer} está escribiendo...`;
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        // Ocultar indicador "escribiendo"
+        function hideTypingIndicator(typer) {
+            const indicator = document.getElementById('typing-indicator');
+            if (indicator && indicator.textContent.includes(typer)) {
+                indicator.remove();
+            }
+        }
 
         // Función de confeti
         function createConfetti() {
@@ -384,6 +484,10 @@
             }
         });
         
+        messageInput.addEventListener('input', function() {
+            updateTypingStatus();
+        });
+        
         messageInput.addEventListener('keypress', function(e) {
             if (e.key === 'Enter' && !e.shiftKey) {
                 e.preventDefault();
@@ -408,7 +512,9 @@
                     sender: 'Sistema',
                     content: `${username} se ha unido al chat.`,
                     type: 'system-message',
-                    timestamp: firebase.database.ServerValue.TIMESTAMP
+                    timestamp: firebase.database.ServerValue.TIMESTAMP,
+                    delivered: true,
+                    read: true
                 });
                 
                 if (messageCount === 0) {
@@ -425,43 +531,57 @@
                     sender: username,
                     content: message,
                     type: 'user-message',
-                    timestamp: firebase.database.ServerValue.TIMESTAMP
+                    timestamp: firebase.database.ServerValue.TIMESTAMP,
+                    delivered: false,
+                    read: false
                 };
                 
                 // Guardar en Firebase
-                messagesRef.push(messageObj);
+                const newMessageRef = messagesRef.push(messageObj);
+                
+                // Actualizar estado de entrega
+                newMessageRef.update({ delivered: true });
                 
                 // Limpiar el input
                 messageInput.value = '';
                 messageInput.focus();
                 messageCount++;
+                
+                // Actualizar estado de "escribiendo"
+                clearTimeout(typingTimeout);
+                isTyping = false;
+                typingRef.child(username).remove();
             }
         }
         
-        function addMessage(sender, content, type) {
-            const messageElement = document.createElement('div');
-            messageElement.className = `message ${type}`;
+        function updateTypingStatus() {
+            const now = Date.now();
+            if (!isTyping) {
+                isTyping = true;
+                typingRef.child(username).set(true);
+            }
+            lastTypingTime = now;
             
-            const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-            
-            messageElement.innerHTML = `
-                <div class="message-sender">
-                    ${sender}
-                    <span class="message-time">${time}</span>
-                </div>
-                <div class="message-content">${content}</div>
-            `;
-            
-            messageElement.style.animationDelay = `${messageCount * 0.1}s`;
-            
-            chatMessages.appendChild(messageElement);
-            chatMessages.scrollTop = chatMessages.scrollHeight;
+            clearTimeout(typingTimeout);
+            typingTimeout = setTimeout(() => {
+                if (Date.now() - lastTypingTime > 2000) {
+                    isTyping = false;
+                    typingRef.child(username).remove();
+                }
+            }, 2000);
         }
         
         // Animación inicial del título
         const letters = document.querySelectorAll('.chat-header span');
         letters.forEach((letter, index) => {
             letter.style.animationDelay = `${index * 0.1}s`;
+        });
+
+        // Limpiar estado al salir
+        window.addEventListener('beforeunload', function() {
+            if (username) {
+                typingRef.child(username).remove();
+            }
         });
     </script>
 </body>
