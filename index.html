@@ -371,32 +371,23 @@
         let lastTypingTime = 0;
         let typingTimeout;
 
-        // Escuchar nuevos mensajes
-        messagesRef.orderByChild('timestamp').limitToLast(100).on('child_added', (snapshot) => {
+        // Escuchar nuevos mensajes (VERSIÓN CORREGIDA)
+        messagesRef.orderByChild('timestamp').on('child_added', (snapshot) => {
             const data = snapshot.val();
-            displayMessage(data, snapshot.key);
-        });
-
-        // Escuchar estado "escribiendo"
-        typingRef.on('child_added', (snapshot) => {
-            const typer = snapshot.key;
-            if (typer !== username) {
-                showTypingIndicator(typer);
+            // Mostrar todos los mensajes excepto los propios (se muestran directamente al enviar)
+            if (data.sender !== username) {
+                displayMessage(data, snapshot.key);
             }
         });
 
-        typingRef.on('child_removed', (snapshot) => {
-            hideTypingIndicator(snapshot.key);
-        });
-
-        // Función para mostrar mensajes
+        // Función para mostrar mensajes (ACTUALIZADA)
         function displayMessage(data, messageId) {
             // Verificar si el mensaje ya existe
             if (document.getElementById(`msg-${messageId}`)) return;
             
             const isCurrentUser = data.sender === username;
-            const messageType = isCurrentUser ? 'user-message' : 
-                              data.type === 'system-message' ? 'system-message' : 'other-message';
+            const messageType = data.type === 'system-message' ? 'system-message' : 
+                              isCurrentUser ? 'user-message' : 'other-message';
             
             const messageElement = document.createElement('div');
             messageElement.className = `message ${messageType}`;
@@ -536,11 +527,23 @@
                     read: false
                 };
                 
-                // Guardar en Firebase
-                const newMessageRef = messagesRef.push(messageObj);
+                // Mostrar mensaje inmediatamente (sin esperar Firebase)
+                const tempId = 'temp-' + Date.now();
+                displayMessage(messageObj, tempId);
                 
-                // Actualizar estado de entrega
-                newMessageRef.update({ delivered: true });
+                // Guardar en Firebase
+                const newMessageRef = messagesRef.push();
+                newMessageRef.set(messageObj)
+                    .then(() => {
+                        // Actualizar estado de entrega
+                        newMessageRef.update({ delivered: true });
+                        
+                        // Reemplazar mensaje temporal con el real
+                        const tempMsg = document.getElementById(`msg-${tempId}`);
+                        if (tempMsg) {
+                            tempMsg.id = `msg-${newMessageRef.key}`;
+                        }
+                    });
                 
                 // Limpiar el input
                 messageInput.value = '';
