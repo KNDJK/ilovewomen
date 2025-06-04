@@ -3,86 +3,451 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Fortnite Español - Amino</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="styles.css">
+    <title>Chat Smile</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #FF6B6B;
+            --secondary-color: #4ECDC4;
+            --accent-color: #FFE66D;
+            --dark-color: #292F36;
+            --light-color: #F7FFF7;
+            --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .chat-container {
+            width: 100%;
+            max-width: 800px;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: var(--shadow);
+            animation: fadeIn 0.5s ease-in-out;
+            background-color: white;
+        }
+        
+        .chat-header {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            color: white;
+            padding: 20px;
+            text-align: center;
+            font-size: 1.8em;
+            font-weight: 700;
+            letter-spacing: 1px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .chat-header::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(45deg, transparent 25%, rgba(255,255,255,0.1) 50%, transparent 75%);
+            background-size: 200% 200%;
+            animation: shimmer 3s infinite linear;
+            opacity: 0.5;
+        }
+        
+        .chat-header span {
+            position: relative;
+            z-index: 1;
+            display: inline-block;
+            animation: bounce 2s infinite;
+        }
+        
+        .chat-messages {
+            height: 400px;
+            overflow-y: auto;
+            padding: 20px;
+            background-color: var(--light-color);
+            scroll-behavior: smooth;
+        }
+        
+        .user-info {
+            background-color: var(--accent-color);
+            color: var(--dark-color);
+            padding: 10px 15px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            text-align: center;
+            font-weight: 600;
+            box-shadow: var(--shadow);
+            animation: slideIn 0.5s ease-out;
+        }
+        
+        .message {
+            margin-bottom: 15px;
+            padding: 12px 15px;
+            border-radius: 15px;
+            background-color: white;
+            box-shadow: var(--shadow);
+            opacity: 0;
+            transform: translateY(20px);
+            animation: popIn 0.3s ease-out forwards;
+            max-width: 80%;
+            position: relative;
+        }
+        
+        .message.user-message {
+            margin-left: auto;
+            background: linear-gradient(135deg, var(--primary-color) 0%, #FF8E8E 100%);
+            color: white;
+            border-bottom-right-radius: 5px;
+        }
+        
+        .message.other-message {
+            margin-right: auto;
+            background: linear-gradient(135deg, var(--secondary-color) 0%, #8BDFDA 100%);
+            color: white;
+            border-bottom-left-radius: 5px;
+        }
+        
+        .message.system-message {
+            margin: 15px auto;
+            background-color: var(--accent-color);
+            color: var(--dark-color);
+            text-align: center;
+            max-width: 60%;
+            font-style: italic;
+            font-size: 0.9em;
+        }
+        
+        .message-sender {
+            font-weight: 600;
+            margin-bottom: 5px;
+            display: flex;
+            align-items: center;
+        }
+        
+        .message-time {
+            font-size: 0.7em;
+            opacity: 0.8;
+            margin-left: 10px;
+            font-weight: 300;
+        }
+        
+        .message-content {
+            line-height: 1.4;
+        }
+        
+        .chat-input {
+            padding: 15px;
+            background-color: white;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        #username-input {
+            padding: 12px 15px;
+            border: 2px solid #eee;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            font-family: 'Poppins', sans-serif;
+            transition: all 0.3s ease;
+            font-size: 1em;
+        }
+        
+        #username-input:focus {
+            border-color: var(--primary-color);
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(255, 107, 107, 0.2);
+        }
+        
+        #message-input {
+            padding: 12px 15px;
+            border: 2px solid #eee;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            resize: none;
+            font-family: 'Poppins', sans-serif;
+            transition: all 0.3s ease;
+            font-size: 1em;
+            height: 80px;
+        }
+        
+        #message-input:focus {
+            border-color: var(--secondary-color);
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(78, 205, 196, 0.2);
+        }
+        
+        #send-button {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 1em;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            transition: all 0.3s ease;
+            box-shadow: var(--shadow);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        #send-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+        }
+        
+        #send-button:active {
+            transform: translateY(0);
+        }
+        
+        #send-button::after {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(
+                to bottom right,
+                rgba(255, 255, 255, 0.3) 0%,
+                rgba(255, 255, 255, 0) 60%
+            );
+            transform: rotate(30deg);
+            transition: all 0.3s ease;
+        }
+        
+        #send-button:hover::after {
+            left: 100%;
+        }
+        
+        /* Animaciones */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: scale(0.95); }
+            to { opacity: 1; transform: scale(1); }
+        }
+        
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        @keyframes popIn {
+            0% { opacity: 0; transform: translateY(20px) scale(0.9); }
+            50% { opacity: 1; transform: translateY(-5px) scale(1.05); }
+            100% { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-5px); }
+        }
+        
+        @keyframes shimmer {
+            0% { background-position: 100% 100%; }
+            100% { background-position: 0% 0%; }
+        }
+        
+        /* Scrollbar personalizada */
+        .chat-messages::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        .chat-messages::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+        
+        .chat-messages::-webkit-scrollbar-thumb {
+            background: linear-gradient(var(--primary-color), var(--secondary-color));
+            border-radius: 10px;
+        }
+        
+        .chat-messages::-webkit-scrollbar-thumb:hover {
+            background: linear-gradient(to bottom, #FF5252, #00ACC1);
+        }
+        
+        /* Efecto de confeti */
+        .confetti {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background-color: var(--accent-color);
+            opacity: 0;
+            animation: confetti 3s ease-out forwards;
+        }
+        
+        @keyframes confetti {
+            0% { transform: translateY(0) rotate(0deg); opacity: 1; }
+            100% { transform: translateY(500px) rotate(360deg); opacity: 0; }
+        }
+    </style>
 </head>
 <body>
-    <!-- Header de Amino (igual al enlace) -->
-    <header class="amino-header">
-        <div class="header-top">
-            <button class="back-button"><i class="fas fa-chevron-left"></i></button>
-            <div class="header-title">
-                <img src="https://via.placeholder.com/30" alt="Logo Fortnite" class="community-icon">
-                <h1>Fortnite Español</h1>
-            </div>
-            <button class="search-button"><i class="fas fa-search"></i></button>
+    <div class="chat-container">
+        <div class="chat-header">
+            <span>S</span><span>M</span><span>I</span><span>L</span><span>E</span> Chat 😊
         </div>
-        <nav class="header-tabs">
-            <a href="#" class="active">Inicio</a>
-            <a href="#">Posts</a>
-            <a href="#">Wiki</a>
-            <a href="#">Miembros</a>
-            <a href="#">Chats</a>
-        </nav>
-    </header>
-
-    <!-- Banner de la comunidad (como en Amino) -->
-    <div class="community-banner">
-        <img src="https://via.placeholder.com/1200x200" alt="Banner Fortnite">
+        
+        <div class="chat-messages" id="chat-messages">
+            <div class="user-info" id="user-info">
+                ¡Bienvenido al Chat Smile! Ingresa tu nombre para comenzar.
+            </div>
+        </div>
+        
+        <div class="chat-input">
+            <input type="text" id="username-input" placeholder="¿Cómo te llamas?">
+            <textarea id="message-input" placeholder="Escribe tu mensaje aquí..." rows="3" disabled></textarea>
+            <button id="send-button" disabled>Enviar ✨</button>
+        </div>
     </div>
 
-    <!-- Contenido principal (feed de posts) -->
-    <main class="amino-feed">
-        <!-- Post destacado (como en Amino) -->
-        <div class="featured-post">
-            <div class="post-header">
-                <img src="https://via.placeholder.com/40" alt="Admin" class="post-avatar">
-                <div class="post-author">
-                    <span class="username">Admin</span>
-                    <span class="post-time">Publicado por líder</span>
+    <script>
+        const usernameInput = document.getElementById('username-input');
+        const messageInput = document.getElementById('message-input');
+        const sendButton = document.getElementById('send-button');
+        const chatMessages = document.getElementById('chat-messages');
+        const userInfo = document.getElementById('user-info');
+        
+        let username = '';
+        let messageCount = 0;
+        
+        // Efecto de confeti
+        function createConfetti() {
+            const colors = ['#FF6B6B', '#4ECDC4', '#FFE66D', '#292F36'];
+            for (let i = 0; i < 30; i++) {
+                const confetti = document.createElement('div');
+                confetti.className = 'confetti';
+                confetti.style.left = Math.random() * 100 + 'vw';
+                confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                confetti.style.width = Math.random() * 10 + 5 + 'px';
+                confetti.style.height = Math.random() * 10 + 5 + 'px';
+                confetti.style.animationDelay = Math.random() * 2 + 's';
+                confetti.style.animationDuration = Math.random() * 3 + 2 + 's';
+                document.body.appendChild(confetti);
+                
+                // Eliminar el confeti después de la animación
+                setTimeout(() => {
+                    confetti.remove();
+                }, 5000);
+            }
+        }
+        
+        // Habilitar el chat cuando se ingresa un nombre de usuario
+        usernameInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                setUsername();
+            }
+        });
+        
+        // Enviar mensaje al presionar Enter
+        messageInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendMessage();
+            }
+        });
+        
+        // Enviar mensaje al hacer clic en el botón
+        sendButton.addEventListener('click', sendMessage);
+        
+        function setUsername() {
+            const newUsername = usernameInput.value.trim();
+            if (newUsername) {
+                username = newUsername;
+                userInfo.textContent = `¡Hola, ${username}! Estás listo para chatear en Smile.`;
+                usernameInput.disabled = true;
+                messageInput.disabled = false;
+                sendButton.disabled = false;
+                messageInput.focus();
+                
+                // Agregar mensaje de sistema con animación
+                setTimeout(() => {
+                    addSystemMessage(`${username} se ha unido al chat.`);
+                    
+                    // Efecto de confeti al unirse
+                    if (messageCount === 0) {
+                        createConfetti();
+                    }
+                }, 500);
+            }
+        }
+        
+        function sendMessage() {
+            const message = messageInput.value.trim();
+            if (message) {
+                addMessage(username, message, 'user-message');
+                messageInput.value = '';
+                messageInput.focus();
+                messageCount++;
+                
+                // Respuesta automática simulada después de 1 segundo
+                if (messageCount === 1) {
+                    setTimeout(() => {
+                        addMessage('Smile Bot', `¡Hola ${username}! Bienvenido al chat Smile. ¿Cómo estás hoy?`, 'other-message');
+                    }, 1000);
+                } else if (message.toLowerCase().includes('hola') || message.toLowerCase().includes('hi')) {
+                    setTimeout(() => {
+                        addMessage('Smile Bot', '¡Hola! 😊 ¿En qué puedo ayudarte hoy?', 'other-message');
+                    }, 1000);
+                } else if (message.toLowerCase().includes('gracias')) {
+                    setTimeout(() => {
+                        addMessage('Smile Bot', '¡De nada! 😊 ¡Que tengas un día maravilloso!', 'other-message');
+                        createConfetti();
+                    }, 1000);
+                }
+            }
+        }
+        
+        function addMessage(sender, content, type) {
+            const messageElement = document.createElement('div');
+            messageElement.className = `message ${type}`;
+            
+            const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            
+            messageElement.innerHTML = `
+                <div class="message-sender">
+                    ${sender}
+                    <span class="message-time">${time}</span>
                 </div>
-            </div>
-            <div class="post-content">
-                <h3>¡Nuevo parche de Fortnite disponible!</h3>
-                <p>Descubre todas las novedades de la temporada 5...</p>
-                <img src="https://via.placeholder.com/600x300" alt="Fortnite Patch" class="post-image">
-            </div>
-            <div class="post-stats">
-                <span><i class="fas fa-heart"></i> 1.2K</span>
-                <span><i class="fas fa-comment"></i> 348</span>
-            </div>
-        </div>
-
-        <!-- Post normal -->
-        <div class="post">
-            <div class="post-header">
-                <img src="https://via.placeholder.com/40" alt="Usuario" class="post-avatar">
-                <div class="post-author">
-                    <span class="username">ProPlayer99</span>
-                    <span class="post-time">Hace 3 horas</span>
-                </div>
-            </div>
-            <div class="post-content">
-                <p>¿Alguien quiere jugar en squad? Dejo mi ID: ProPlayer99#1234</p>
-                <div class="post-actions">
-                    <button><i class="fas fa-heart"></i> 45</button>
-                    <button><i class="fas fa-comment"></i> 12</button>
-                    <button><i class="fas fa-share"></i></button>
-                </div>
-            </div>
-        </div>
-    </main>
-
-    <!-- Bottom Navbar (IDÉNTICO a Amino) -->
-    <nav class="amino-navbar">
-        <a href="#" class="active"><i class="fas fa-home"></i><span>Inicio</span></a>
-        <a href="#"><i class="fas fa-comment-dots"></i><span>Chats</span></a>
-        <a href="#"><i class="fas fa-compass"></i><span>Descubrir</span></a>
-        <a href="#"><i class="fas fa-bell"></i><span>Notificaciones</span></a>
-        <a href="#"><i class="fas fa-user"></i><span>Perfil</span></a>
-    </nav>
-
-    <script src="script.js"></script>
+                <div class="message-content">${content}</div>
+            `;
+            
+            // Aplicar un pequeño retraso a la animación para mensajes consecutivos
+            messageElement.style.animationDelay = `${messageCount * 0.1}s`;
+            
+            chatMessages.appendChild(messageElement);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+        
+        function addSystemMessage(content) {
+            const messageElement = document.createElement('div');
+            messageElement.className = 'message system-message';
+            messageElement.textContent = content;
+            
+            chatMessages.appendChild(messageElement);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+        
+        // Animación inicial del título
+        const letters = document.querySelectorAll('.chat-header span');
+        letters.forEach((letter, index) => {
+            letter.style.animationDelay = `${index * 0.1}s`;
+        });
+    </script>
 </body>
 </html>
