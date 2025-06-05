@@ -312,6 +312,12 @@
             color: var(--dark-color);
             opacity: 0.8;
             font-size: 0.9em;
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 0.6; }
+            50% { opacity: 1; }
         }
     </style>
 </head>
@@ -366,26 +372,37 @@
         const userInfo = document.getElementById('user-info');
         
         let username = '';
-        let messageCount = 0;
         let isTyping = false;
         let lastTypingTime = 0;
         let typingTimeout;
 
-        // Escuchar nuevos mensajes (VERSIÓN CORREGIDA)
+        // Escuchar nuevos mensajes
         messagesRef.orderByChild('timestamp').on('child_added', (snapshot) => {
             const data = snapshot.val();
-            // Mostrar todos los mensajes excepto los propios (se muestran directamente al enviar)
+            // Solo mostrar si no es del usuario actual (los mensajes propios se muestran inmediatamente)
             if (data.sender !== username) {
-                displayMessage(data, snapshot.key);
+                displayMessage(data, snapshot.key, false);
             }
         });
 
-        // Función para mostrar mensajes (ACTUALIZADA)
-        function displayMessage(data, messageId) {
+        // Escuchar estado "escribiendo"
+        typingRef.on('child_added', (snapshot) => {
+            if (snapshot.key !== username) {
+                showTypingIndicator(snapshot.key);
+            }
+        });
+
+        typingRef.on('child_removed', (snapshot) => {
+            if (snapshot.key !== username) {
+                hideTypingIndicator();
+            }
+        });
+
+        // Función para mostrar mensajes
+        function displayMessage(data, messageId, isCurrentUser) {
             // Verificar si el mensaje ya existe
             if (document.getElementById(`msg-${messageId}`)) return;
             
-            const isCurrentUser = data.sender === username;
             const messageType = data.type === 'system-message' ? 'system-message' : 
                               isCurrentUser ? 'user-message' : 'other-message';
             
@@ -393,7 +410,7 @@
             messageElement.className = `message ${messageType}`;
             messageElement.id = `msg-${messageId}`;
             
-            const time = formatTime(data.timestamp);
+            const time = new Date(data.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
             const status = isCurrentUser ? getMessageStatus(data) : '';
             
             messageElement.innerHTML = `
@@ -414,12 +431,6 @@
             }, 50);
         }
 
-        // Función para formato de hora
-        function formatTime(timestamp) {
-            const date = new Date(timestamp);
-            return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-        }
-
         // Función para estado del mensaje (✓✓)
         function getMessageStatus(data) {
             if (!data.delivered) return '<span class="message-status">✓</span>';
@@ -428,22 +439,22 @@
         }
 
         // Mostrar indicador "escribiendo"
-        function showTypingIndicator(typer) {
+        function showTypingIndicator(username) {
             let indicator = document.getElementById('typing-indicator');
             if (!indicator) {
                 indicator = document.createElement('div');
                 indicator.id = 'typing-indicator';
                 indicator.className = 'typing-indicator';
+                indicator.textContent = `${username} está escribiendo...`;
                 chatMessages.appendChild(indicator);
+                chatMessages.scrollTop = chatMessages.scrollHeight;
             }
-            indicator.textContent = `${typer} está escribiendo...`;
-            chatMessages.scrollTop = chatMessages.scrollHeight;
         }
 
         // Ocultar indicador "escribiendo"
-        function hideTypingIndicator(typer) {
+        function hideTypingIndicator() {
             const indicator = document.getElementById('typing-indicator');
-            if (indicator && indicator.textContent.includes(typer)) {
+            if (indicator) {
                 indicator.remove();
             }
         }
@@ -508,9 +519,7 @@
                     read: true
                 });
                 
-                if (messageCount === 0) {
-                    createConfetti();
-                }
+                createConfetti();
             }
         }
         
@@ -523,32 +532,20 @@
                     content: message,
                     type: 'user-message',
                     timestamp: firebase.database.ServerValue.TIMESTAMP,
-                    delivered: false,
+                    delivered: true,
                     read: false
                 };
                 
-                // Mostrar mensaje inmediatamente (sin esperar Firebase)
-                const tempId = 'temp-' + Date.now();
-                displayMessage(messageObj, tempId);
+                // Mostrar mensaje inmediatamente
+                const newMessageRef = messagesRef.push();
+                displayMessage(messageObj, newMessageRef.key, true);
                 
                 // Guardar en Firebase
-                const newMessageRef = messagesRef.push();
-                newMessageRef.set(messageObj)
-                    .then(() => {
-                        // Actualizar estado de entrega
-                        newMessageRef.update({ delivered: true });
-                        
-                        // Reemplazar mensaje temporal con el real
-                        const tempMsg = document.getElementById(`msg-${tempId}`);
-                        if (tempMsg) {
-                            tempMsg.id = `msg-${newMessageRef.key}`;
-                        }
-                    });
+                newMessageRef.set(messageObj);
                 
                 // Limpiar el input
                 messageInput.value = '';
                 messageInput.focus();
-                messageCount++;
                 
                 // Actualizar estado de "escribiendo"
                 clearTimeout(typingTimeout);
