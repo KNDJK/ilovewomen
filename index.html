@@ -6,8 +6,6 @@
     <title>Smile</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Favicon y logo personalizado -->
-    <link rel="icon" href="logo.png" type="image/png">
     <!-- Librería de emojis -->
     <script src="https://cdn.jsdelivr.net/npm/emoji-picker-element@^1/index.js" type="module"></script>
     <style>
@@ -100,27 +98,28 @@
         .chat-header {
             background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
             color: white;
-            padding: 12px 24px;
+            padding: 18px 24px;
+            text-align: center;
             position: relative;
             display: flex;
-            justify-content: space-between;
+            justify-content: center;
             align-items: center;
         }
         
-        .logo-container {
+        .chat-header h1 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            letter-spacing: 0.5px;
             display: flex;
             align-items: center;
-        }
-        
-        .logo {
-            height: 40px;
-            width: auto;
-            object-fit: contain;
+            gap: 10px;
         }
         
         .online-count {
+            position: absolute;
+            right: 20px;
             background-color: rgba(255, 255, 255, 0.2);
-            padding: 6px 12px;
+            padding: 4px 10px;
             border-radius: 20px;
             font-size: 0.8rem;
             display: flex;
@@ -172,7 +171,6 @@
             background-color: var(--primary);
             color: white;
             border-bottom-right-radius: 4px;
-            animation: fadeInUp 0.3s ease-out, pulse 0.5s ease-in-out;
         }
         
         .message.other-message {
@@ -270,11 +268,6 @@
             height: 52px;
             min-width: 52px;
         }
-        
-        .btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
-        }
 
         /* Estilos para el botón de emojis y picker */
         .btn-emoji {
@@ -331,18 +324,67 @@
             z-index: 100;
             opacity: 0;
             transition: var(--transition);
-            display: flex;
-            align-items: center;
-            gap: 10px;
         }
         
         .notification.show {
             opacity: 1;
         }
-        
-        .notification-logo {
-            height: 24px;
-            width: auto;
+
+        /* Nuevos estilos para imágenes y carga */
+        .image-message {
+            margin-top: 8px;
+            border-radius: var(--radius);
+            overflow: hidden;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .message.user-message .image-message img {
+            border: 2px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .message.other-message .image-message img {
+            border: 2px solid rgba(0, 0, 0, 0.05);
+        }
+
+        #upload-button {
+            font-size: 1.3rem;
+            color: var(--primary);
+            transition: var(--transition);
+        }
+
+        #upload-button:hover {
+            color: var(--secondary);
+            transform: scale(1.1);
+        }
+
+        #upload-status {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            z-index: 1000;
+            text-align: center;
+            max-width: 80%;
+        }
+
+        .progress-bar {
+            height: 5px;
+            background: #e0e0e0;
+            margin-top: 10px;
+            border-radius: 5px;
+            overflow: hidden;
+        }
+
+        #upload-progress {
+            height: 100%;
+            width: 0%;
+            background: #4361ee;
+            transition: width 0.3s;
         }
 
         /* Animaciones */
@@ -356,12 +398,6 @@
                 transform: translateY(0);
             }
         }
-        
-        @keyframes pulse {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.02); }
-            100% { transform: scale(1); }
-        }
 
         /* Responsive */
         @media (max-width: 768px) {
@@ -373,10 +409,6 @@
             
             .message {
                 max-width: 90%;
-            }
-            
-            .logo {
-                height: 32px;
             }
         }
     </style>
@@ -391,11 +423,20 @@
 
     <div class="notification" id="notification"></div>
 
+    <!-- Modal de carga de imágenes -->
+    <div id="upload-status">
+        <p id="upload-status-text">Subiendo imagen...</p>
+        <div class="progress-bar">
+            <div id="upload-progress"></div>
+        </div>
+    </div>
+
     <div class="chat-container">
         <div class="chat-header">
-            <div class="logo-container">
-                <img src="logo.png" alt="Logo" class="logo">
-            </div>
+            <h1>
+                <i class="fas fa-smile" style="margin-right: 10px;"></i>
+                Smile
+            </h1>
             <div class="online-count" id="online-count">
                 <i class="fas fa-users"></i>
                 <span id="online-users">1</span>
@@ -419,6 +460,9 @@
                 <button id="emoji-button" class="btn-emoji">
                     <i class="far fa-smile"></i>
                 </button>
+                <button id="upload-button" class="btn-emoji">
+                    <i class="fas fa-image"></i>
+                </button>
                 <textarea id="message-input" placeholder="Escribe tu mensaje aquí..." rows="1" disabled></textarea>
                 <button id="send-button" class="btn">
                     <i class="fas fa-paper-plane"></i>
@@ -433,10 +477,15 @@
         <source src="https://assets.mixkit.co/sfx/preview/mixkit-positive-interface-beep-221.mp3" type="audio/mpeg">
     </audio>
 
+    <!-- SDK de Cloudinary -->
+    <script src="https://upload-widget.cloudinary.com/global/all.js" type="text/javascript"></script>
+    
+    <!-- Firebase -->
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
 
     <script>
+        // Configuración de Firebase
         const firebaseConfig = {
             apiKey: "AIzaSyAH4I4XbzqAph5yq9MUILtu118y5os-oJc",
             authDomain: "smilechat-8afea.firebaseapp.com",
@@ -446,6 +495,14 @@
             messagingSenderId: "88368495681",
             appId: "1:88368495681:web:bf70881957a0a819f81ac0",
             measurementId: "G-NKE2WRMT83"
+        };
+
+        // Configuración de Cloudinary con tus credenciales
+        const cloudinaryConfig = {
+            cloudName: 'dob3xhs1b',
+            apiKey: '332996559628532',
+            uploadPreset: 'chat_uploads',
+            folder: 'chat_images'
         };
 
         firebase.initializeApp(firebaseConfig);
@@ -468,7 +525,11 @@
             onlineUsers: document.getElementById('online-users'),
             notificationSound: document.getElementById('notification-sound'),
             emojiButton: document.getElementById('emoji-button'),
-            emojiPicker: document.getElementById('emoji-picker')
+            emojiPicker: document.getElementById('emoji-picker'),
+            uploadButton: document.getElementById('upload-button'),
+            uploadStatus: document.getElementById('upload-status'),
+            uploadProgress: document.getElementById('upload-progress'),
+            uploadStatusText: document.getElementById('upload-status-text')
         };
         
         let username = '';
@@ -477,6 +538,95 @@
         let myPresenceRef;
         let myMessages = new Set();
         let isWindowFocused = true;
+
+        // Inicializa el widget de Cloudinary
+        const myWidget = cloudinary.createUploadWidget({
+            cloudName: cloudinaryConfig.cloudName,
+            apiKey: cloudinaryConfig.apiKey,
+            uploadPreset: cloudinaryConfig.uploadPreset,
+            folder: cloudinaryConfig.folder,
+            sources: ['local', 'camera'],
+            multiple: false,
+            resourceType: 'image',
+            cropping: false,
+            showAdvancedOptions: false,
+            clientAllowedFormats: ['jpg', 'png', 'gif', 'webp'],
+            maxFileSize: 5000000, // 5MB
+            styles: {
+                palette: {
+                    window: "#FFFFFF",
+                    windowBorder: "#4361ee",
+                    tabIcon: "#4361ee",
+                    menuIcons: "#4361ee",
+                    textDark: "#000000",
+                    textLight: "#FFFFFF",
+                    link: "#4361ee",
+                    action: "#4361ee",
+                    inactiveTabIcon: "#B3B3B3",
+                    error: "#F44235",
+                    inProgress: "#4361ee",
+                    complete: "#20B832",
+                    sourceBg: "#E4EBF1"
+                }
+            }
+        }, (error, result) => {
+            if (!error && result && result.event === "success") {
+                elements.uploadProgress.style.width = '100%';
+                elements.uploadStatusText.textContent = '¡Imagen subida con éxito!';
+                
+                // Optimizar la imagen automáticamente con Cloudinary
+                const optimizedUrl = `https://res.cloudinary.com/${cloudinaryConfig.cloudName}/image/upload/f_auto,q_auto/${result.info.public_id}`;
+                sendImageMessage(optimizedUrl);
+                
+                setTimeout(() => {
+                    elements.uploadStatus.style.display = 'none';
+                }, 2000);
+            } else if (error) {
+                elements.uploadProgress.style.width = '0%';
+                elements.uploadStatusText.textContent = 'Error al subir la imagen: ' + (error.message || 'Intenta nuevamente');
+                setTimeout(() => {
+                    elements.uploadStatus.style.display = 'none';
+                }, 3000);
+            } else if (result && result.event === "progress") {
+                const progress = Math.round(result.info.progress * 100);
+                elements.uploadProgress.style.width = progress + '%';
+                elements.uploadStatusText.textContent = `Subiendo... ${progress}%`;
+            } else if (result && result.event === "display-changed") {
+                elements.uploadStatus.style.display = 'block';
+            }
+        });
+
+        // Función para enviar mensajes con imágenes
+        function sendImageMessage(imageUrl) {
+            if (!username) {
+                showNotification("Primero ingresa tu nombre de usuario", false);
+                return;
+            }
+            
+            const messageObj = {
+                sender: username,
+                content: `<div class="image-message"><img src="${imageUrl}" alt="Imagen enviada" style="max-width: 100%; border-radius: 8px; max-height: 300px; object-fit: contain;"></div>`,
+                timestamp: firebase.database.ServerValue.TIMESTAMP,
+                isImage: true
+            };
+            
+            const newMessageRef = messagesRef.push();
+            const messageId = newMessageRef.key;
+            
+            displayMessage({
+                ...messageObj,
+                id: messageId
+            }, messageId, true);
+            
+            newMessageRef.set(messageObj)
+                .then(() => {
+                    showNotification('Imagen enviada');
+                })
+                .catch(error => {
+                    console.error("Error al enviar imagen:", error);
+                    showNotification("Error al enviar la imagen", false);
+                });
+        }
 
         // Verificar si la ventana tiene foco
         window.addEventListener('focus', () => {
@@ -498,10 +648,7 @@
         }
 
         function showNotification(message, isSuccess = true) {
-            elements.notification.innerHTML = `
-                <img src="logo.png" alt="Logo" class="notification-logo">
-                <span>${message}</span>
-            `;
+            elements.notification.textContent = message;
             elements.notification.style.backgroundColor = isSuccess ? 'var(--success)' : 'var(--warning)';
             elements.notification.classList.add('show');
             setTimeout(() => {
@@ -520,7 +667,7 @@
                 if (Notification.permission === "granted") {
                     new Notification("Smile", {
                         body: "¡Tienes un nuevo mensaje!",
-                        icon: "logo.png"
+                        icon: "https://cdn-icons-png.flaticon.com/512/2272/2272898.png"
                     });
                 }
                 // Notificación interna
@@ -574,12 +721,13 @@
                 myMessages.add(messageId);
             }
             
+            // Modificado para manejar contenido HTML en mensajes de imagen
             messageElement.innerHTML = `
                 <div class="message-sender">
                     ${data.sender}
                     <span class="message-time">${time} ${status}</span>
                 </div>
-                <div class="message-content">${data.content}</div>
+                ${data.isImage ? data.content : `<div class="message-content">${escapeHtml(data.content)}</div>`}
             `;
             
             elements.chatMessages.appendChild(messageElement);
@@ -603,6 +751,16 @@
                 messageElement.style.transform = 'translateY(0)';
                 elements.chatMessages.scrollTop = elements.chatMessages.scrollHeight;
             }, 50);
+        }
+
+        // Función auxiliar para escapar HTML (solo para mensajes de texto)
+        function escapeHtml(unsafe) {
+            return unsafe
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
         }
 
         function showTypingIndicator(typingUser) {
@@ -734,6 +892,15 @@
             if (!elements.emojiButton.contains(e.target) && !elements.emojiPicker.contains(e.target)) {
                 elements.emojiPicker.classList.remove('show');
             }
+        });
+
+        // Event listener para el botón de subir imagen
+        elements.uploadButton.addEventListener('click', () => {
+            if (!username) {
+                showNotification("Primero ingresa tu nombre de usuario", false);
+                return;
+            }
+            myWidget.open();
         });
         
         // Event listeners
