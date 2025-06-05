@@ -6,6 +6,8 @@
     <title>Smile</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Favicon y logo personalizado -->
+    <link rel="icon" href="logo.png" type="image/png">
     <!-- Librería de emojis -->
     <script src="https://cdn.jsdelivr.net/npm/emoji-picker-element@^1/index.js" type="module"></script>
     <style>
@@ -98,28 +100,27 @@
         .chat-header {
             background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
             color: white;
-            padding: 18px 24px;
-            text-align: center;
+            padding: 12px 24px;
             position: relative;
             display: flex;
-            justify-content: center;
+            justify-content: space-between;
             align-items: center;
         }
         
-        .chat-header h1 {
-            font-size: 1.5rem;
-            font-weight: 600;
-            letter-spacing: 0.5px;
+        .logo-container {
             display: flex;
             align-items: center;
-            gap: 10px;
+        }
+        
+        .logo {
+            height: 40px;
+            width: auto;
+            object-fit: contain;
         }
         
         .online-count {
-            position: absolute;
-            right: 20px;
             background-color: rgba(255, 255, 255, 0.2);
-            padding: 4px 10px;
+            padding: 6px 12px;
             border-radius: 20px;
             font-size: 0.8rem;
             display: flex;
@@ -171,6 +172,7 @@
             background-color: var(--primary);
             color: white;
             border-bottom-right-radius: 4px;
+            animation: fadeInUp 0.3s ease-out, pulse 0.5s ease-in-out;
         }
         
         .message.other-message {
@@ -268,6 +270,11 @@
             height: 52px;
             min-width: 52px;
         }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+        }
 
         /* Estilos para el botón de emojis y picker */
         .btn-emoji {
@@ -324,10 +331,18 @@
             z-index: 100;
             opacity: 0;
             transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 10px;
         }
         
         .notification.show {
             opacity: 1;
+        }
+        
+        .notification-logo {
+            height: 24px;
+            width: auto;
         }
 
         /* Animaciones */
@@ -341,6 +356,12 @@
                 transform: translateY(0);
             }
         }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.02); }
+            100% { transform: scale(1); }
+        }
 
         /* Responsive */
         @media (max-width: 768px) {
@@ -352,6 +373,10 @@
             
             .message {
                 max-width: 90%;
+            }
+            
+            .logo {
+                height: 32px;
             }
         }
     </style>
@@ -368,10 +393,9 @@
 
     <div class="chat-container">
         <div class="chat-header">
-            <h1>
-                <i class="fas fa-smile" style="margin-right: 10px;"></i>
-                Smile
-            </h1>
+            <div class="logo-container">
+                <img src="logo.png" alt="Logo" class="logo">
+            </div>
             <div class="online-count" id="online-count">
                 <i class="fas fa-users"></i>
                 <span id="online-users">1</span>
@@ -474,7 +498,10 @@
         }
 
         function showNotification(message, isSuccess = true) {
-            elements.notification.textContent = message;
+            elements.notification.innerHTML = `
+                <img src="logo.png" alt="Logo" class="notification-logo">
+                <span>${message}</span>
+            `;
             elements.notification.style.backgroundColor = isSuccess ? 'var(--success)' : 'var(--warning)';
             elements.notification.classList.add('show');
             setTimeout(() => {
@@ -493,7 +520,7 @@
                 if (Notification.permission === "granted") {
                     new Notification("Smile", {
                         body: "¡Tienes un nuevo mensaje!",
-                        icon: "https://cdn-icons-png.flaticon.com/512/2272/2272898.png"
+                        icon: "logo.png"
                     });
                 }
                 // Notificación interna
