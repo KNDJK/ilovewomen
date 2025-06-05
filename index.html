@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Smile Chat</title>
+    <title>Smile</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -303,8 +303,8 @@
     <div class="chat-container">
         <div class="chat-header">
             <h1>
-                <i class="fas fa-comments" style="margin-right: 10px;"></i>
-                Smile Chat
+                <i class="fas fa-smile" style="margin-right: 10px;"></i>
+                Smile
             </h1>
             <div class="online-count" id="online-count">
                 <i class="fas fa-users"></i>
@@ -314,7 +314,7 @@
         
         <div class="chat-messages" id="chat-messages">
             <div class="user-info" id="user-info">
-                ¡Bienvenido al Chat Smile! Ingresa tu nombre para comenzar.
+                ¡Bienvenido a Smile! Ingresa tu nombre para comenzar.
             </div>
         </div>
         
@@ -333,6 +333,11 @@
             </div>
         </div>
     </div>
+
+    <!-- Audio para notificaciones (oculto) -->
+    <audio id="notification-sound" preload="auto">
+        <source src="https://assets.mixkit.co/sfx/preview/mixkit-positive-interface-beep-221.mp3" type="audio/mpeg">
+    </audio>
 
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
@@ -366,14 +371,25 @@
             messageGroup: document.getElementById('message-group'),
             notification: document.getElementById('notification'),
             onlineCount: document.getElementById('online-count'),
-            onlineUsers: document.getElementById('online-users')
+            onlineUsers: document.getElementById('online-users'),
+            notificationSound: document.getElementById('notification-sound')
         };
         
         let username = '';
         let isTyping = false;
         let typingTimeout;
         let myPresenceRef;
-        let myMessages = new Set(); // Para trackear mensajes propios
+        let myMessages = new Set();
+        let isWindowFocused = true;
+
+        // Verificar si la ventana tiene foco
+        window.addEventListener('focus', () => {
+            isWindowFocused = true;
+        });
+
+        window.addEventListener('blur', () => {
+            isWindowFocused = false;
+        });
 
         function formatFirebaseTimestamp(timestamp) {
             if (timestamp && typeof timestamp === 'object' && '_seconds' in timestamp) {
@@ -392,6 +408,35 @@
             setTimeout(() => {
                 elements.notification.classList.remove('show');
             }, 2000);
+        }
+
+        function playNotificationSound() {
+            elements.notificationSound.currentTime = 0;
+            elements.notificationSound.play().catch(e => console.log("Error playing sound:", e));
+        }
+
+        function showNewMessageNotification() {
+            if (!isWindowFocused) {
+                // Notificación del navegador
+                if (Notification.permission === "granted") {
+                    new Notification("Smile", {
+                        body: "¡Tienes un nuevo mensaje!",
+                        icon: "https://cdn-icons-png.flaticon.com/512/2272/2272898.png"
+                    });
+                }
+                // Notificación interna
+                showNotification("¡Nuevo mensaje en Smile!");
+                playNotificationSound();
+            } else {
+                // Solo sonido si la ventana tiene foco
+                playNotificationSound();
+            }
+        }
+
+        function requestNotificationPermission() {
+            if (Notification.permission !== "granted") {
+                Notification.requestPermission();
+            }
         }
 
         function deleteOldMessages() {
@@ -482,11 +527,6 @@
             }
         }
 
-        function hideTypingIndicator() {
-            const indicator = document.getElementById('typing-indicator');
-            if (indicator) indicator.remove();
-        }
-
         function setUsername() {
             const newUsername = elements.usernameInput.value.trim();
             if (newUsername) {
@@ -511,6 +551,7 @@
                 });
                 
                 showNotification(`Bienvenido, ${username}!`);
+                requestNotificationPermission();
             }
         }
         
@@ -526,13 +567,11 @@
                 const newMessageRef = messagesRef.push();
                 const messageId = newMessageRef.key;
                 
-                // Mostrar mensaje inmediatamente
                 displayMessage({
                     ...messageObj,
                     id: messageId
                 }, messageId, true);
                 
-                // Guardar en Firebase
                 newMessageRef.set(messageObj)
                     .then(() => {
                         showNotification('Mensaje enviado');
@@ -540,10 +579,6 @@
                             newMessageRef.remove();
                             myMessages.delete(messageId);
                         }, 3600000);
-                    })
-                    .catch(error => {
-                        showNotification('Error al enviar', false);
-                        console.error("Error sending message:", error);
                     });
                 
                 elements.messageInput.value = '';
@@ -598,17 +633,18 @@
         
         elements.sendButton.addEventListener('click', sendMessage);
         
-        // Escuchar nuevos mensajes (CORRECCIÓN PRINCIPAL)
+        // Escuchar nuevos mensajes
         messagesRef.orderByChild('timestamp').on('child_added', (snapshot) => {
             const data = snapshot.val();
             const messageId = snapshot.key;
             
-            // Mostrar mensaje si:
-            // 1. No es del usuario actual O
-            // 2. Es un mensaje del sistema O
-            // 3. Es un mensaje propio que ya tenemos registrado
             if (data.sender !== username || data.type === 'system-message' || myMessages.has(messageId)) {
                 displayMessage(data, messageId, myMessages.has(messageId));
+                
+                // Mostrar notificación solo para mensajes nuevos de otros usuarios
+                if (data.sender !== username && !myMessages.has(messageId) && username) {
+                    showNewMessageNotification();
+                }
             }
         });
 
@@ -638,6 +674,11 @@
                 typingRef.child(username).remove();
                 if (myPresenceRef) myPresenceRef.remove();
             }
+        });
+
+        // Inicializar círculos de fondo
+        document.querySelectorAll('.circle').forEach(circle => {
+            circle.style.opacity = '0.5';
         });
     </script>
 </body>
