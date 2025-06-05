@@ -14,6 +14,7 @@
             --dark: #2b2d42; /* Gris azulado oscuro */
             --light: #f8f9fa; /* Blanco suave */
             --text: #495057; /* Gris para texto */
+            --success: #2ecc71; /* Verde para confirmaciones */
             --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.12);
             --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
             --radius: 12px;
@@ -39,7 +40,7 @@
             position: relative;
         }
         
-        /* Fondo animado */
+        /* Fondo animado mejorado */
         .background {
             position: fixed;
             top: 0;
@@ -48,60 +49,66 @@
             height: 100%;
             z-index: -1;
             overflow: hidden;
+            background: linear-gradient(135deg, #f5f7fa 0%, #e6f0ff 100%);
         }
         
         .circle {
             position: absolute;
             border-radius: 50%;
-            background: rgba(67, 97, 238, 0.05);
+            background: rgba(67, 97, 238, 0.08);
             animation: float 15s infinite linear;
+            opacity: 0;
         }
         
         .circle:nth-child(1) {
             width: 300px;
             height: 300px;
-            top: 20%;
-            left: 10%;
+            top: 10%;
+            left: 5%;
             animation-delay: 0s;
+            animation-duration: 25s;
         }
         
         .circle:nth-child(2) {
             width: 200px;
             height: 200px;
-            top: 60%;
+            top: 70%;
             left: 80%;
-            animation-delay: 2s;
-            animation-duration: 12s;
+            animation-delay: 5s;
+            animation-duration: 20s;
         }
         
         .circle:nth-child(3) {
             width: 150px;
             height: 150px;
             top: 80%;
-            left: 20%;
-            animation-delay: 4s;
-            animation-duration: 18s;
+            left: 15%;
+            animation-delay: 10s;
+            animation-duration: 30s;
         }
         
         .circle:nth-child(4) {
             width: 250px;
             height: 250px;
-            top: 10%;
-            left: 70%;
-            animation-delay: 1s;
-            animation-duration: 20s;
+            top: 5%;
+            left: 75%;
+            animation-delay: 15s;
+            animation-duration: 22s;
         }
         
         @keyframes float {
             0% {
-                transform: translateY(0) rotate(0deg);
+                transform: translateY(100vh) rotate(0deg);
+                opacity: 0;
+            }
+            10% {
                 opacity: 0.5;
             }
-            50% {
-                opacity: 0.8;
+            90% {
+                opacity: 0.5;
             }
             100% {
-                transform: translateY(-100vh) rotate(360deg);
+                transform: translateY(-100px) rotate(360deg);
                 opacity: 0;
             }
         }
@@ -128,6 +135,9 @@
             padding: 18px 24px;
             text-align: center;
             position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
         }
         
         .chat-header h1 {
@@ -136,8 +146,19 @@
             letter-spacing: 0.5px;
             display: flex;
             align-items: center;
-            justify-content: center;
             gap: 10px;
+        }
+        
+        .online-count {
+            position: absolute;
+            right: 20px;
+            background-color: rgba(255, 255, 255, 0.2);
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            display: flex;
+            align-items: center;
+            gap: 5px;
         }
         
         .chat-messages {
@@ -218,6 +239,11 @@
             font-size: 0.7rem;
             opacity: 0.8;
             font-weight: 400;
+        }
+        
+        .message-status {
+            margin-left: 5px;
+            font-size: 0.7rem;
         }
         
         .chat-input-container {
@@ -301,6 +327,8 @@
             opacity: 0.6;
             cursor: not-allowed;
             transform: none !important;
+            background: #e9ecef;
+            color: #adb5bd;
         }
         
         /* Animaciones */
@@ -368,11 +396,32 @@
             30% { transform: translateY(-3px); opacity: 1; }
         }
         
+        /* Notificación de mensaje enviado */
+        .notification {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: var(--success);
+            color: white;
+            padding: 12px 24px;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow-md);
+            z-index: 100;
+            opacity: 0;
+            transition: var(--transition);
+        }
+        
+        .notification.show {
+            opacity: 1;
+        }
+        
         /* Responsive */
         @media (max-width: 768px) {
             .chat-container {
                 height: 90vh;
                 max-height: none;
+                border-radius: 0;
             }
             
             .message {
@@ -392,6 +441,15 @@
                 height: 48px;
                 min-width: 48px;
             }
+            
+            .chat-header h1 {
+                font-size: 1.3rem;
+            }
+            
+            .online-count {
+                position: static;
+                margin-left: auto;
+            }
         }
     </style>
 </head>
@@ -404,6 +462,11 @@
         <div class="circle"></div>
     </div>
 
+    <!-- Notificación -->
+    <div class="notification" id="notification">
+        Mensaje enviado
+    </div>
+
     <!-- Contenedor del chat -->
     <div class="chat-container">
         <div class="chat-header">
@@ -411,6 +474,10 @@
                 <i class="fas fa-comments" style="margin-right: 10px;"></i>
                 Smile Chat
             </h1>
+            <div class="online-count" id="online-count">
+                <i class="fas fa-users"></i>
+                <span id="online-users">1</span>
+            </div>
         </div>
         
         <div class="chat-messages" id="chat-messages">
@@ -457,6 +524,7 @@
         const database = firebase.database();
         const messagesRef = database.ref('messages');
         const typingRef = database.ref('typing');
+        const presenceRef = database.ref('presence');
 
         // Elementos del DOM
         const elements = {
@@ -467,12 +535,16 @@
             chatMessages: document.getElementById('chat-messages'),
             userInfo: document.getElementById('user-info'),
             usernameGroup: document.getElementById('username-group'),
-            messageGroup: document.getElementById('message-group')
+            messageGroup: document.getElementById('message-group'),
+            notification: document.getElementById('notification'),
+            onlineCount: document.getElementById('online-count'),
+            onlineUsers: document.getElementById('online-users')
         };
         
         let username = '';
         let isTyping = false;
         let typingTimeout;
+        let myPresenceRef;
 
         // Función para formatear la fecha
         function formatFirebaseTimestamp(timestamp) {
@@ -483,6 +555,15 @@
                 return new Date(timestamp);
             }
             return new Date();
+        }
+
+        // Mostrar notificación
+        function showNotification(message) {
+            elements.notification.textContent = message;
+            elements.notification.classList.add('show');
+            setTimeout(() => {
+                elements.notification.classList.remove('show');
+            }, 2000);
         }
 
         // Función para borrar mensajes antiguos (1 hora)
@@ -516,10 +597,15 @@
             const timestamp = formatFirebaseTimestamp(data.timestamp);
             const time = timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
             
+            let status = '';
+            if (isCurrentUser) {
+                status = '<span class="message-status">✓✓</span>';
+            }
+            
             messageElement.innerHTML = `
                 <div class="message-sender">
                     ${data.sender}
-                    <span class="message-time">${time}</span>
+                    <span class="message-time">${time} ${status}</span>
                 </div>
                 <div class="message-content">${data.content}</div>
             `;
@@ -589,6 +675,11 @@
                 elements.sendButton.disabled = false;
                 elements.messageInput.focus();
                 
+                // Configurar presencia
+                myPresenceRef = presenceRef.child(username);
+                myPresenceRef.set(true);
+                myPresenceRef.onDisconnect().remove();
+                
                 // Mensaje de sistema
                 messagesRef.push({
                     sender: 'Sistema',
@@ -596,6 +687,8 @@
                     type: 'system-message',
                     timestamp: firebase.database.ServerValue.TIMESTAMP
                 });
+                
+                showNotification(`Bienvenido, ${username}!`);
             }
         }
         
@@ -617,6 +710,7 @@
                 
                 newMessageRef.set(messageObj)
                     .then(() => {
+                        showNotification('Mensaje enviado');
                         setTimeout(() => {
                             newMessageRef.remove();
                         }, 3600000);
@@ -675,10 +769,11 @@
         
         elements.sendButton.addEventListener('click', sendMessage);
         
-        // Escuchar nuevos mensajes
+        // Escuchar nuevos mensajes (CORRECCIÓN IMPORTANTE)
         messagesRef.orderByChild('timestamp').on('child_added', (snapshot) => {
             const data = snapshot.val();
-            if (data.sender !== username) {
+            // Solo mostrar si no es del usuario actual (los mensajes propios se muestran inmediatamente)
+            if (data.sender !== username || data.type === 'system-message') {
                 displayMessage(data, snapshot.key, false);
             }
         });
@@ -696,6 +791,13 @@
             }
         });
         
+        // Contar usuarios en línea
+        presenceRef.on('value', (snapshot) => {
+            const users = snapshot.val() || {};
+            const count = Object.keys(users).length;
+            elements.onlineUsers.textContent = count;
+        });
+        
         // Limpieza inicial y programada
         deleteOldMessages();
         setInterval(deleteOldMessages, 3600000);
@@ -704,6 +806,7 @@
         window.addEventListener('beforeunload', () => {
             if (username) {
                 typingRef.child(username).remove();
+                if (myPresenceRef) myPresenceRef.remove();
             }
         });
     </script>
