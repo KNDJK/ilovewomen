@@ -4,20 +4,20 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Smile Chat</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
-            --primary: #FF7EB9; /* Rosa alegre */
-            --secondary: #7AFcFF; /* Azul claro */
-            --accent: #FEFF9C; /* Amarillo pastel */
-            --dark: #2E2E2E; /* Gris oscuro */
-            --light: #FFFDF7; /* Blanco cálido */
-            --success: #42E2B8; /* Verde menta */
-            --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.1);
-            --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.15);
-            --radius: 16px;
-            --transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            --primary: #4361ee; /* Azul profesional */
+            --secondary: #3a0ca3; /* Azul oscuro */
+            --accent: #4cc9f0; /* Azul claro */
+            --dark: #2b2d42; /* Gris azulado oscuro */
+            --light: #f8f9fa; /* Blanco suave */
+            --text: #495057; /* Gris para texto */
+            --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.12);
+            --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
+            --radius: 12px;
+            --transition: all 0.25s ease;
         }
         
         * {
@@ -28,61 +28,117 @@
         
         body {
             font-family: 'Poppins', sans-serif;
-            background: linear-gradient(135deg, #FFF5F5 0%, #F0F9FF 100%);
+            background-color: #f0f2f5;
             min-height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
             padding: 20px;
-            color: var(--dark);
+            color: var(--text);
+            overflow: hidden;
+            position: relative;
+        }
+        
+        /* Fondo animado */
+        .background {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            overflow: hidden;
+        }
+        
+        .circle {
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(67, 97, 238, 0.05);
+            animation: float 15s infinite linear;
+        }
+        
+        .circle:nth-child(1) {
+            width: 300px;
+            height: 300px;
+            top: 20%;
+            left: 10%;
+            animation-delay: 0s;
+        }
+        
+        .circle:nth-child(2) {
+            width: 200px;
+            height: 200px;
+            top: 60%;
+            left: 80%;
+            animation-delay: 2s;
+            animation-duration: 12s;
+        }
+        
+        .circle:nth-child(3) {
+            width: 150px;
+            height: 150px;
+            top: 80%;
+            left: 20%;
+            animation-delay: 4s;
+            animation-duration: 18s;
+        }
+        
+        .circle:nth-child(4) {
+            width: 250px;
+            height: 250px;
+            top: 10%;
+            left: 70%;
+            animation-delay: 1s;
+            animation-duration: 20s;
+        }
+        
+        @keyframes float {
+            0% {
+                transform: translateY(0) rotate(0deg);
+                opacity: 0.5;
+            }
+            50% {
+                opacity: 0.8;
+            }
+            100% {
+                transform: translateY(-100vh) rotate(360deg);
+                opacity: 0;
+            }
         }
         
         .chat-container {
             width: 100%;
-            max-width: 800px;
-            height: 90vh;
-            max-height: 800px;
+            max-width: 900px;
+            height: 80vh;
+            max-height: 700px;
             border-radius: var(--radius);
             overflow: hidden;
             box-shadow: var(--shadow-md);
             display: flex;
             flex-direction: column;
             background-color: white;
+            position: relative;
+            z-index: 1;
+            border: 1px solid rgba(0, 0, 0, 0.05);
         }
         
         .chat-header {
             background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
             color: white;
-            padding: 20px;
+            padding: 18px 24px;
             text-align: center;
             position: relative;
-            overflow: hidden;
         }
         
         .chat-header h1 {
-            font-size: 1.8rem;
-            font-weight: 700;
-            letter-spacing: 1px;
+            font-size: 1.5rem;
+            font-weight: 600;
+            letter-spacing: 0.5px;
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 8px;
+            gap: 10px;
         }
-        
-        .chat-header .logo {
-            display: flex;
-        }
-        
-        .chat-header .logo span {
-            display: inline-block;
-            animation: bounce 2s infinite;
-        }
-        
-        .chat-header .logo span:nth-child(1) { animation-delay: 0.1s; }
-        .chat-header .logo span:nth-child(2) { animation-delay: 0.2s; }
-        .chat-header .logo span:nth-child(3) { animation-delay: 0.3s; }
-        .chat-header .logo span:nth-child(4) { animation-delay: 0.4s; }
-        .chat-header .logo span:nth-child(5) { animation-delay: 0.5s; }
         
         .chat-messages {
             flex: 1;
@@ -97,19 +153,20 @@
         
         .user-info {
             background-color: var(--accent);
-            color: var(--dark);
-            padding: 12px 16px;
+            color: white;
+            padding: 12px 20px;
             border-radius: var(--radius);
-            margin-bottom: 8px;
+            margin-bottom: 12px;
             text-align: center;
-            font-weight: 600;
+            font-weight: 500;
             box-shadow: var(--shadow-sm);
             align-self: center;
             max-width: 90%;
+            font-size: 0.95rem;
         }
         
         .message {
-            padding: 12px 16px;
+            padding: 14px 18px;
             border-radius: var(--radius);
             box-shadow: var(--shadow-sm);
             max-width: 80%;
@@ -118,48 +175,49 @@
             transform: translateY(10px);
             animation: fadeInUp 0.3s ease-out forwards;
             transition: var(--transition);
+            font-size: 0.95rem;
+            line-height: 1.5;
         }
         
         .message.user-message {
             margin-left: auto;
-            background: linear-gradient(135deg, var(--primary) 0%, #FF8EC5 100%);
+            background-color: var(--primary);
             color: white;
             border-bottom-right-radius: 4px;
         }
         
         .message.other-message {
             margin-right: auto;
-            background: linear-gradient(135deg, var(--secondary) 0%, #8BDFDA 100%);
-            color: var(--dark);
+            background-color: white;
+            color: var(--text);
+            border: 1px solid rgba(0, 0, 0, 0.05);
             border-bottom-left-radius: 4px;
         }
         
         .message.system-message {
             margin: 0 auto;
             background-color: var(--accent);
-            color: var(--dark);
+            color: white;
             text-align: center;
             max-width: 70%;
             font-style: italic;
-            font-size: 0.9em;
+            font-size: 0.85rem;
+            padding: 10px 16px;
         }
         
         .message-sender {
             font-weight: 600;
-            margin-bottom: 4px;
+            margin-bottom: 6px;
             display: flex;
             align-items: center;
             gap: 8px;
+            font-size: 0.85rem;
         }
         
         .message-time {
             font-size: 0.7rem;
             opacity: 0.8;
-            font-weight: 300;
-        }
-        
-        .message-content {
-            line-height: 1.4;
+            font-weight: 400;
         }
         
         .chat-input-container {
@@ -171,40 +229,45 @@
         .input-group {
             display: flex;
             gap: 12px;
+            align-items: flex-end;
         }
         
         #username-input {
-            padding: 12px 16px;
-            border: 2px solid #eee;
+            padding: 14px 18px;
+            border: 1px solid #e9ecef;
             border-radius: var(--radius);
             font-family: 'Poppins', sans-serif;
             transition: var(--transition);
-            font-size: 1em;
+            font-size: 1rem;
             flex: 1;
+            background-color: var(--light);
         }
         
         #username-input:focus {
             border-color: var(--primary);
             outline: none;
-            box-shadow: 0 0 0 3px rgba(255, 126, 185, 0.2);
+            box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.1);
         }
         
         #message-input {
-            padding: 12px 16px;
-            border: 2px solid #eee;
+            padding: 14px 18px;
+            border: 1px solid #e9ecef;
             border-radius: var(--radius);
             resize: none;
             font-family: 'Poppins', sans-serif;
             transition: var(--transition);
-            font-size: 1em;
+            font-size: 1rem;
             flex: 1;
             min-height: 60px;
+            max-height: 120px;
+            background-color: var(--light);
+            line-height: 1.5;
         }
         
         #message-input:focus {
-            border-color: var(--secondary);
+            border-color: var(--primary);
             outline: none;
-            box-shadow: 0 0 0 3px rgba(122, 252, 255, 0.2);
+            box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.1);
         }
         
         .btn {
@@ -214,13 +277,15 @@
             padding: 0 20px;
             border-radius: var(--radius);
             cursor: pointer;
-            font-weight: 600;
-            font-size: 1em;
+            font-weight: 500;
+            font-size: 1rem;
             transition: var(--transition);
             box-shadow: var(--shadow-sm);
             display: flex;
             align-items: center;
             justify-content: center;
+            height: 52px;
+            min-width: 52px;
         }
         
         .btn:hover {
@@ -232,21 +297,16 @@
             transform: translateY(0);
         }
         
-        .btn-send {
-            width: 50px;
-            height: 50px;
-            border-radius: 50%;
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none !important;
         }
         
         /* Animaciones */
         @keyframes fadeInUp {
             from { opacity: 0; transform: translateY(10px); }
             to { opacity: 1; transform: translateY(0); }
-        }
-        
-        @keyframes bounce {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-5px); }
         }
         
         /* Scrollbar personalizada */
@@ -260,33 +320,17 @@
         }
         
         .chat-messages::-webkit-scrollbar-thumb {
-            background: linear-gradient(var(--primary), var(--secondary));
+            background: rgba(67, 97, 238, 0.3);
             border-radius: 10px;
         }
         
         .chat-messages::-webkit-scrollbar-thumb:hover {
-            background: linear-gradient(to bottom, #FF7EB9, #7AFcFF);
+            background: rgba(67, 97, 238, 0.5);
         }
         
-        /* Efecto de confeti */
-        .confetti {
-            position: absolute;
-            width: 10px;
-            height: 10px;
-            background-color: var(--accent);
-            opacity: 0;
-            animation: confetti 3s ease-out forwards;
-            border-radius: 50%;
-        }
-        
-        @keyframes confetti {
-            0% { transform: translateY(0) rotate(0deg); opacity: 1; }
-            100% { transform: translateY(500px) rotate(360deg); opacity: 0; }
-        }
-
         /* Indicador "escribiendo" */
         .typing-indicator {
-            background-color: var(--light);
+            background-color: white;
             padding: 8px 16px;
             border-radius: var(--radius);
             margin-bottom: 4px;
@@ -294,10 +338,12 @@
             align-items: center;
             gap: 8px;
             font-style: italic;
-            color: var(--dark);
+            color: var(--text);
             opacity: 0.8;
-            font-size: 0.9em;
+            font-size: 0.85rem;
             align-self: flex-start;
+            box-shadow: var(--shadow-sm);
+            border: 1px solid rgba(0, 0, 0, 0.05);
         }
         
         .typing-dots {
@@ -319,31 +365,51 @@
         
         @keyframes typingAnimation {
             0%, 60%, 100% { transform: translateY(0); opacity: 0.6; }
-            30% { transform: translateY(-5px); opacity: 1; }
+            30% { transform: translateY(-3px); opacity: 1; }
         }
         
         /* Responsive */
-        @media (max-width: 600px) {
+        @media (max-width: 768px) {
             .chat-container {
-                height: 100vh;
+                height: 90vh;
                 max-height: none;
-                border-radius: 0;
             }
             
             .message {
-                max-width: 90%;
+                max-width: 85%;
+                padding: 12px 16px;
+            }
+            
+            .input-group {
+                gap: 8px;
+            }
+            
+            #username-input, #message-input {
+                padding: 12px 16px;
+            }
+            
+            .btn {
+                height: 48px;
+                min-width: 48px;
             }
         }
     </style>
 </head>
 <body>
+    <!-- Fondo animado -->
+    <div class="background">
+        <div class="circle"></div>
+        <div class="circle"></div>
+        <div class="circle"></div>
+        <div class="circle"></div>
+    </div>
+
+    <!-- Contenedor del chat -->
     <div class="chat-container">
         <div class="chat-header">
             <h1>
-                <div class="logo">
-                    <span>S</span><span>M</span><span>I</span><span>L</span><span>E</span>
-                </div>
-                Chat <i class="fas fa-smile" style="margin-left: 8px;"></i>
+                <i class="fas fa-comments" style="margin-right: 10px;"></i>
+                Smile Chat
             </h1>
         </div>
         
@@ -354,7 +420,7 @@
         </div>
         
         <div class="chat-input-container">
-            <div class="input-group">
+            <div class="input-group" id="username-group">
                 <input type="text" id="username-input" placeholder="¿Cómo te llamas?">
                 <button id="set-username-btn" class="btn">
                     <i class="fas fa-check"></i>
@@ -362,7 +428,7 @@
             </div>
             <div class="input-group" style="display: none;" id="message-group">
                 <textarea id="message-input" placeholder="Escribe tu mensaje aquí..." rows="1" disabled></textarea>
-                <button id="send-button" class="btn btn-send" disabled>
+                <button id="send-button" class="btn" disabled>
                     <i class="fas fa-paper-plane"></i>
                 </button>
             </div>
@@ -400,6 +466,7 @@
             setUsernameBtn: document.getElementById('set-username-btn'),
             chatMessages: document.getElementById('chat-messages'),
             userInfo: document.getElementById('user-info'),
+            usernameGroup: document.getElementById('username-group'),
             messageGroup: document.getElementById('message-group')
         };
         
@@ -407,34 +474,26 @@
         let isTyping = false;
         let typingTimeout;
 
-        // Función para formatear correctamente la fecha
+        // Función para formatear la fecha
         function formatFirebaseTimestamp(timestamp) {
-            // Si es el objeto especial de Firebase {_seconds, _nanoseconds}
             if (timestamp && typeof timestamp === 'object' && '_seconds' in timestamp) {
                 return new Date(timestamp._seconds * 1000);
             }
-            // Si ya es un número (timestamp tradicional)
             else if (typeof timestamp === 'number') {
                 return new Date(timestamp);
             }
-            // Si es un string de fecha ISO
-            else if (typeof timestamp === 'string') {
-                return new Date(timestamp);
-            }
-            // Si no reconocemos el formato
             return new Date();
         }
 
-        // Función para borrar mensajes antiguos
+        // Función para borrar mensajes antiguos (1 hora)
         function deleteOldMessages() {
-            const oneHourAgo = Date.now() - 3600000; // 1 hora en milisegundos
+            const oneHourAgo = Date.now() - 3600000;
             
             messagesRef.orderByChild('timestamp').endAt(oneHourAgo).once('value', (snapshot) => {
                 if (snapshot.exists()) {
                     const updates = {};
                     snapshot.forEach((child) => {
-                        updates[child.key] = null; // Marcar para borrado
-                        // Eliminar también del DOM si existe
+                        updates[child.key] = null;
                         const msgElement = document.getElementById(`msg-${child.key}`);
                         if (msgElement) msgElement.remove();
                     });
@@ -445,7 +504,6 @@
 
         // Función para mostrar mensajes
         function displayMessage(data, messageId, isCurrentUser) {
-            // Verificar si el mensaje ya existe
             if (messageId && document.getElementById(`msg-${messageId}`)) return;
             
             const messageType = data.type === 'system-message' ? 'system-message' : 
@@ -455,7 +513,6 @@
             messageElement.className = `message ${messageType}`;
             if (messageId) messageElement.id = `msg-${messageId}`;
             
-            // Formatear correctamente la fecha
             const timestamp = formatFirebaseTimestamp(data.timestamp);
             const time = timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
             
@@ -474,7 +531,8 @@
             if (timeLeft > 0) {
                 setTimeout(() => {
                     if (messageElement.parentNode) {
-                        messageElement.style.animation = 'fadeOut 0.3s ease-out forwards';
+                        messageElement.style.opacity = '0';
+                        messageElement.style.transform = 'translateY(10px)';
                         setTimeout(() => messageElement.remove(), 300);
                     }
                     if (messageId) {
@@ -483,9 +541,8 @@
                 }, timeLeft);
             }
             
-            // Animación de entrada
             setTimeout(() => {
-                messageElement.style.opacity = 1;
+                messageElement.style.opacity = '1';
                 messageElement.style.transform = 'translateY(0)';
                 elements.chatMessages.scrollTop = elements.chatMessages.scrollHeight;
             }, 50);
@@ -519,28 +576,6 @@
             }
         }
 
-        // Función de confeti
-        function createConfetti() {
-            const colors = [var(--primary), var(--secondary), var(--accent), '#FF7EB9', '#7AFcFF', '#FEFF9C'];
-            const container = document.querySelector('.chat-container');
-            
-            for (let i = 0; i < 50; i++) {
-                const confetti = document.createElement('div');
-                confetti.className = 'confetti';
-                confetti.style.left = Math.random() * 100 + '%';
-                confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
-                confetti.style.width = Math.random() * 10 + 5 + 'px';
-                confetti.style.height = Math.random() * 10 + 5 + 'px';
-                confetti.style.animationDelay = Math.random() * 2 + 's';
-                confetti.style.animationDuration = Math.random() * 3 + 2 + 's';
-                container.appendChild(confetti);
-                
-                setTimeout(() => {
-                    confetti.remove();
-                }, 5000);
-            }
-        }
-        
         // Configurar usuario
         function setUsername() {
             const newUsername = elements.usernameInput.value.trim();
@@ -561,8 +596,6 @@
                     type: 'system-message',
                     timestamp: firebase.database.ServerValue.TIMESTAMP
                 });
-                
-                createConfetti();
             }
         }
         
@@ -576,27 +609,23 @@
                     timestamp: firebase.database.ServerValue.TIMESTAMP
                 };
                 
-                // Mostrar mensaje inmediatamente
                 const newMessageRef = messagesRef.push();
                 displayMessage({
                     ...messageObj,
                     id: newMessageRef.key
                 }, true);
                 
-                // Guardar en Firebase
                 newMessageRef.set(messageObj)
                     .then(() => {
-                        // Programar borrado después de 1 hora
                         setTimeout(() => {
                             newMessageRef.remove();
                         }, 3600000);
                     });
                 
-                // Limpiar el input
                 elements.messageInput.value = '';
+                elements.messageInput.style.height = 'auto';
                 elements.messageInput.focus();
                 
-                // Actualizar estado de "escribiendo"
                 clearTimeout(typingTimeout);
                 isTyping = false;
                 typingRef.child(username).remove();
@@ -619,6 +648,33 @@
             }, 2000);
         }
         
+        // Ajustar altura del textarea dinámicamente
+        function adjustTextareaHeight(textarea) {
+            textarea.style.height = 'auto';
+            textarea.style.height = (textarea.scrollHeight) + 'px';
+        }
+        
+        // Event listeners
+        elements.usernameInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') setUsername();
+        });
+        
+        elements.setUsernameBtn.addEventListener('click', setUsername);
+        
+        elements.messageInput.addEventListener('input', function() {
+            updateTypingStatus();
+            adjustTextareaHeight(this);
+        });
+        
+        elements.messageInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendMessage();
+            }
+        });
+        
+        elements.sendButton.addEventListener('click', sendMessage);
+        
         // Escuchar nuevos mensajes
         messagesRef.orderByChild('timestamp').on('child_added', (snapshot) => {
             const data = snapshot.val();
@@ -640,39 +696,15 @@
             }
         });
         
-        // Event listeners
-        elements.usernameInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') setUsername();
-        });
-        
-        elements.setUsernameBtn.addEventListener('click', setUsername);
-        
-        elements.messageInput.addEventListener('input', updateTypingStatus);
-        
-        elements.messageInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter' && !e.shiftKey) {
-                e.preventDefault();
-                sendMessage();
-            }
-        });
-        
-        elements.sendButton.addEventListener('click', sendMessage);
-        
         // Limpieza inicial y programada
         deleteOldMessages();
-        setInterval(deleteOldMessages, 3600000); // Cada hora
+        setInterval(deleteOldMessages, 3600000);
 
         // Limpiar estado al salir
         window.addEventListener('beforeunload', () => {
             if (username) {
                 typingRef.child(username).remove();
             }
-        });
-        
-        // Ajustar altura del textarea automáticamente
-        elements.messageInput.addEventListener('input', function() {
-            this.style.height = 'auto';
-            this.style.height = (this.scrollHeight) + 'px';
         });
     </script>
 </body>
