@@ -6,6 +6,8 @@
     <title>Smile</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Librería de emojis -->
+    <script src="https://cdn.jsdelivr.net/npm/emoji-picker-element@^1/index.js" type="module"></script>
     <style>
         :root {
             --primary: #4361ee;
@@ -266,6 +268,48 @@
             height: 52px;
             min-width: 52px;
         }
+
+        /* Estilos para el botón de emojis y picker */
+        .btn-emoji {
+            background: transparent;
+            border: none;
+            color: var(--primary);
+            font-size: 1.5rem;
+            cursor: pointer;
+            padding: 0 12px;
+            transition: var(--transition);
+            height: 52px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .btn-emoji:hover {
+            color: var(--secondary);
+            transform: scale(1.1);
+        }
+
+        emoji-picker {
+            --background: white;
+            --border-color: rgba(0, 0, 0, 0.05);
+            --input-border-color: #e9ecef;
+            --input-font-size: 1rem;
+            --category-emoji-padding: 0.5rem;
+            position: absolute;
+            bottom: 80px;
+            right: 16px;
+            opacity: 0;
+            transform: translateY(10px);
+            transition: var(--transition);
+            z-index: 10;
+            box-shadow: var(--shadow-md);
+            border-radius: var(--radius);
+        }
+
+        emoji-picker.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
         
         .notification {
             position: fixed;
@@ -285,9 +329,31 @@
         .notification.show {
             opacity: 1;
         }
-        
-        /* Animaciones y responsive... (mantener las mismas que antes) */
 
+        /* Animaciones */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .chat-container {
+                height: 90vh;
+                max-height: none;
+                border-radius: 0;
+            }
+            
+            .message {
+                max-width: 90%;
+            }
+        }
     </style>
 </head>
 <body>
@@ -326,10 +392,14 @@
                 </button>
             </div>
             <div class="input-group" style="display: none;" id="message-group">
+                <button id="emoji-button" class="btn-emoji">
+                    <i class="far fa-smile"></i>
+                </button>
                 <textarea id="message-input" placeholder="Escribe tu mensaje aquí..." rows="1" disabled></textarea>
-                <button id="send-button" class="btn" disabled>
+                <button id="send-button" class="btn">
                     <i class="fas fa-paper-plane"></i>
                 </button>
+                <emoji-picker id="emoji-picker"></emoji-picker>
             </div>
         </div>
     </div>
@@ -372,7 +442,9 @@
             notification: document.getElementById('notification'),
             onlineCount: document.getElementById('online-count'),
             onlineUsers: document.getElementById('online-users'),
-            notificationSound: document.getElementById('notification-sound')
+            notificationSound: document.getElementById('notification-sound'),
+            emojiButton: document.getElementById('emoji-button'),
+            emojiPicker: document.getElementById('emoji-picker')
         };
         
         let username = '';
@@ -527,6 +599,13 @@
             }
         }
 
+        function hideTypingIndicator() {
+            const indicator = document.getElementById('typing-indicator');
+            if (indicator) {
+                indicator.remove();
+            }
+        }
+
         function setUsername() {
             const newUsername = elements.usernameInput.value.trim();
             if (newUsername) {
@@ -611,6 +690,24 @@
             textarea.style.height = 'auto';
             textarea.style.height = (textarea.scrollHeight) + 'px';
         }
+        
+        // Configuración del emoji picker
+        elements.emojiButton.addEventListener('click', () => {
+            elements.emojiPicker.classList.toggle('show');
+        });
+
+        elements.emojiPicker.addEventListener('emoji-click', (event) => {
+            elements.messageInput.value += event.detail.unicode;
+            elements.messageInput.focus();
+            adjustTextareaHeight(elements.messageInput);
+        });
+
+        // Cerrar el picker al hacer clic fuera
+        document.addEventListener('click', (e) => {
+            if (!elements.emojiButton.contains(e.target) && !elements.emojiPicker.contains(e.target)) {
+                elements.emojiPicker.classList.remove('show');
+            }
+        });
         
         // Event listeners
         elements.usernameInput.addEventListener('keypress', (e) => {
