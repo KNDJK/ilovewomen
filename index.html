@@ -6,6 +6,8 @@
     <title>Smile</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Favicon -->
+    <link rel="icon" href="logo.png" type="image/png">
     <!-- Librería de emojis -->
     <script src="https://cdn.jsdelivr.net/npm/emoji-picker-element@^1/index.js" type="module"></script>
     <style>
@@ -98,28 +100,33 @@
         .chat-header {
             background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
             color: white;
-            padding: 18px 24px;
-            text-align: center;
+            padding: 12px 24px;
             position: relative;
             display: flex;
-            justify-content: center;
+            justify-content: space-between;
             align-items: center;
         }
         
-        .chat-header h1 {
-            font-size: 1.5rem;
-            font-weight: 600;
-            letter-spacing: 0.5px;
+        .logo-container {
             display: flex;
             align-items: center;
             gap: 10px;
         }
         
+        .logo {
+            height: 32px;
+            width: auto;
+            object-fit: contain;
+        }
+        
+        .header-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+        }
+        
         .online-count {
-            position: absolute;
-            right: 20px;
             background-color: rgba(255, 255, 255, 0.2);
-            padding: 4px 10px;
+            padding: 6px 12px;
             border-radius: 20px;
             font-size: 0.8rem;
             display: flex;
@@ -269,6 +276,11 @@
             min-width: 52px;
         }
 
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+        }
+
         /* Estilos para el botón de emojis y picker */
         .btn-emoji {
             background: transparent;
@@ -324,13 +336,21 @@
             z-index: 100;
             opacity: 0;
             transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 10px;
         }
         
         .notification.show {
             opacity: 1;
         }
 
-        /* Nuevos estilos para imágenes y carga */
+        .notification-logo {
+            height: 24px;
+            width: auto;
+        }
+
+        /* Nuevos estilos para imágenes */
         .image-message {
             margin-top: 8px;
             border-radius: var(--radius);
@@ -346,17 +366,7 @@
             border: 2px solid rgba(0, 0, 0, 0.05);
         }
 
-        #upload-button {
-            font-size: 1.3rem;
-            color: var(--primary);
-            transition: var(--transition);
-        }
-
-        #upload-button:hover {
-            color: var(--secondary);
-            transform: scale(1.1);
-        }
-
+        /* Estilos para el modal de carga */
         #upload-status {
             display: none;
             position: fixed;
@@ -366,25 +376,26 @@
             background: white;
             padding: 20px;
             border-radius: 10px;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            box-shadow: 0 0 15px rgba(0,0,0,0.2);
             z-index: 1000;
             text-align: center;
-            max-width: 80%;
+            max-width: 300px;
+            width: 90%;
         }
 
         .progress-bar {
-            height: 5px;
+            height: 6px;
             background: #e0e0e0;
-            margin-top: 10px;
-            border-radius: 5px;
+            margin-top: 15px;
+            border-radius: 3px;
             overflow: hidden;
         }
 
         #upload-progress {
             height: 100%;
             width: 0%;
-            background: #4361ee;
-            transition: width 0.3s;
+            background: linear-gradient(90deg, var(--primary), var(--accent));
+            transition: width 0.3s ease;
         }
 
         /* Animaciones */
@@ -398,6 +409,12 @@
                 transform: translateY(0);
             }
         }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.02); }
+            100% { transform: scale(1); }
+        }
 
         /* Responsive */
         @media (max-width: 768px) {
@@ -410,6 +427,14 @@
             .message {
                 max-width: 90%;
             }
+            
+            .logo {
+                height: 28px;
+            }
+            
+            .header-title {
+                font-size: 1rem;
+            }
         }
     </style>
 </head>
@@ -421,9 +446,12 @@
         <div class="circle" style="width: 250px; height: 250px; top: 5%; left: 75%; animation-delay: 15s; animation-duration: 22s;"></div>
     </div>
 
-    <div class="notification" id="notification"></div>
+    <div class="notification" id="notification">
+        <img src="logo.png" alt="Logo" class="notification-logo">
+        <span id="notification-message"></span>
+    </div>
 
-    <!-- Modal de carga de imágenes -->
+    <!-- Modal de carga -->
     <div id="upload-status">
         <p id="upload-status-text">Subiendo imagen...</p>
         <div class="progress-bar">
@@ -433,10 +461,10 @@
 
     <div class="chat-container">
         <div class="chat-header">
-            <h1>
-                <i class="fas fa-smile" style="margin-right: 10px;"></i>
-                Smile
-            </h1>
+            <div class="logo-container">
+                <img src="logo.png" alt="Logo" class="logo">
+                <span class="header-title">Smile</span>
+            </div>
             <div class="online-count" id="online-count">
                 <i class="fas fa-users"></i>
                 <span id="online-users">1</span>
@@ -472,7 +500,7 @@
         </div>
     </div>
 
-    <!-- Audio para notificaciones (oculto) -->
+    <!-- Audio para notificaciones -->
     <audio id="notification-sound" preload="auto">
         <source src="https://assets.mixkit.co/sfx/preview/mixkit-positive-interface-beep-221.mp3" type="audio/mpeg">
     </audio>
@@ -497,7 +525,7 @@
             measurementId: "G-NKE2WRMT83"
         };
 
-        // Configuración de Cloudinary con tus credenciales
+        // Configuración de Cloudinary
         const cloudinaryConfig = {
             cloudName: 'dob3xhs1b',
             apiKey: '332996559628532',
@@ -521,6 +549,7 @@
             usernameGroup: document.getElementById('username-group'),
             messageGroup: document.getElementById('message-group'),
             notification: document.getElementById('notification'),
+            notificationMessage: document.getElementById('notification-message'),
             onlineCount: document.getElementById('online-count'),
             onlineUsers: document.getElementById('online-users'),
             notificationSound: document.getElementById('notification-sound'),
@@ -538,6 +567,7 @@
         let myPresenceRef;
         let myMessages = new Set();
         let isWindowFocused = true;
+        let tempImageMessages = {};
 
         // Inicializa el widget de Cloudinary
         const myWidget = cloudinary.createUploadWidget({
@@ -569,13 +599,16 @@
                     sourceBg: "#E4EBF1"
                 }
             }
-        }, (error, result) => {
+        }, handleCloudinaryUpload);
+
+        // Función para manejar la subida a Cloudinary
+        function handleCloudinaryUpload(error, result) {
             if (!error && result && result.event === "success") {
                 elements.uploadProgress.style.width = '100%';
                 elements.uploadStatusText.textContent = '¡Imagen subida con éxito!';
                 
-                // Optimizar la imagen automáticamente con Cloudinary
-                const optimizedUrl = optimizeImageUrl(result.info.public_id);
+                // Optimizar la imagen
+                const optimizedUrl = getOptimizedImageUrl(result.info.public_id);
                 sendImageMessage(optimizedUrl);
                 
                 setTimeout(() => {
@@ -594,19 +627,19 @@
             } else if (result && result.event === "display-changed") {
                 elements.uploadStatus.style.display = 'block';
             }
-        });
+        }
 
-        // Función para optimizar la URL de la imagen
-        function optimizeImageUrl(publicId) {
+        // Función para obtener URL optimizada de imagen
+        function getOptimizedImageUrl(publicId) {
             // Parámetros de optimización:
-            // f_auto: formato automático (webp si el navegador lo soporta)
+            // f_auto: formato automático (WebP si compatible)
             // q_auto: calidad automática
-            // w_800: ancho máximo de 800px
-            // c_limit: mantiene las proporciones
+            // w_800: ancho máximo 800px
+            // c_limit: mantiene proporciones
             return `https://res.cloudinary.com/${cloudinaryConfig.cloudName}/image/upload/f_auto,q_auto,w_800,c_limit/${publicId}`;
         }
 
-        // Función para subir imágenes pegadas (Ctrl+V)
+        // Función para subir imagen pegada (Ctrl+V)
         async function uploadPastedImage(file) {
             if (!username) {
                 showNotification("Primero ingresa tu nombre de usuario", false);
@@ -625,21 +658,23 @@
                 return;
             }
 
+            // Mostrar estado de carga
             elements.uploadStatus.style.display = 'block';
             elements.uploadProgress.style.width = '0%';
             elements.uploadStatusText.textContent = 'Preparando imagen...';
 
-            try {
-                // Mostrar vista previa mientras se sube
-                const previewUrl = URL.createObjectURL(file);
-                const tempMessageId = 'temp-' + Date.now();
-                displayMessage({
-                    sender: username,
-                    content: `<div class="image-message"><img src="${previewUrl}" alt="Previsualización" style="max-width: 100%; border-radius: 8px; max-height: 300px; object-fit: contain; opacity: 0.7;"></div>`,
-                    timestamp: new Date().getTime()
-                }, tempMessageId, true);
+            // Crear ID temporal para la vista previa
+            const tempId = 'temp-' + Date.now();
+            
+            // Mostrar vista previa
+            const previewUrl = URL.createObjectURL(file);
+            tempImageMessages[tempId] = {
+                element: createTempImageMessage(previewUrl),
+                url: previewUrl
+            };
 
-                // Crear formulario para subir a Cloudinary
+            try {
+                // Subir a Cloudinary
                 const formData = new FormData();
                 formData.append('file', file);
                 formData.append('upload_preset', cloudinaryConfig.uploadPreset);
@@ -658,31 +693,55 @@
                     throw new Error(data.error.message);
                 }
 
-                // Eliminar la vista previa
-                const tempElement = document.getElementById(`msg-${tempMessageId}`);
-                if (tempElement) tempElement.remove();
+                // Eliminar vista previa
+                if (tempImageMessages[tempId]) {
+                    tempImageMessages[tempId].element.remove();
+                    delete tempImageMessages[tempId];
+                }
 
                 // Obtener URL optimizada
-                const optimizedUrl = optimizeImageUrl(data.public_id);
+                const optimizedUrl = getOptimizedImageUrl(data.public_id);
                 
-                // Enviar mensaje con la imagen final
+                // Enviar mensaje con imagen final
                 sendImageMessage(optimizedUrl);
                 
                 showNotification('Imagen enviada');
             } catch (error) {
                 console.error("Error al subir imagen:", error);
                 showNotification("Error al subir la imagen", false);
+                
+                // Eliminar vista previa si hay error
+                if (tempImageMessages[tempId]) {
+                    tempImageMessages[tempId].element.remove();
+                    delete tempImageMessages[tempId];
+                }
             } finally {
                 elements.uploadStatus.style.display = 'none';
             }
         }
 
+        // Función para crear mensaje temporal de imagen
+        function createTempImageMessage(imageUrl) {
+            const messageElement = document.createElement('div');
+            messageElement.className = 'message user-message';
+            messageElement.style.opacity = '0.7';
+            messageElement.innerHTML = `
+                <div class="message-sender">
+                    ${username}
+                    <span class="message-time">Enviando...</span>
+                </div>
+                <div class="image-message">
+                    <img src="${imageUrl}" alt="Previsualización" style="max-width: 100%; border-radius: 8px; max-height: 300px; object-fit: contain;">
+                </div>
+            `;
+            elements.chatMessages.appendChild(messageElement);
+            elements.chatMessages.scrollTop = elements.chatMessages.scrollHeight;
+            return messageElement;
+        }
+
         // Función para enviar mensajes con imágenes
         function sendImageMessage(imageUrl) {
-            if (!username) {
-                showNotification("Primero ingresa tu nombre de usuario", false);
-                return;
-            }
+            if (!username) return;
             
             const messageObj = {
                 sender: username,
@@ -729,9 +788,13 @@
         }
 
         function showNotification(message, isSuccess = true) {
-            elements.notification.textContent = message;
+            elements.notificationMessage.textContent = message;
             elements.notification.style.backgroundColor = isSuccess ? 'var(--success)' : 'var(--warning)';
             elements.notification.classList.add('show');
+            
+            // Reproducir sonido de notificación
+            playNotificationSound();
+            
             setTimeout(() => {
                 elements.notification.classList.remove('show');
             }, 2000);
@@ -739,7 +802,7 @@
 
         function playNotificationSound() {
             elements.notificationSound.currentTime = 0;
-            elements.notificationSound.play().catch(e => console.log("Error playing sound:", e));
+            elements.notificationSound.play().catch(e => console.log("Error al reproducir sonido:", e));
         }
 
         function showNewMessageNotification() {
@@ -748,12 +811,11 @@
                 if (Notification.permission === "granted") {
                     new Notification("Smile", {
                         body: "¡Tienes un nuevo mensaje!",
-                        icon: "https://cdn-icons-png.flaticon.com/512/2272/2272898.png"
+                        icon: "logo.png"
                     });
                 }
                 // Notificación interna
                 showNotification("¡Nuevo mensaje en Smile!");
-                playNotificationSound();
             } else {
                 // Solo sonido si la ventana tiene foco
                 playNotificationSound();
@@ -802,7 +864,6 @@
                 myMessages.add(messageId);
             }
             
-            // Modificado para manejar contenido HTML en mensajes de imagen
             messageElement.innerHTML = `
                 <div class="message-sender">
                     ${data.sender}
@@ -834,7 +895,7 @@
             }, 50);
         }
 
-        // Función auxiliar para escapar HTML (solo para mensajes de texto)
+        // Función auxiliar para escapar HTML
         function escapeHtml(unsafe) {
             return unsafe
                 .replace(/&/g, "&amp;")
@@ -986,8 +1047,6 @@
 
         // Manejar pegado de imágenes (Ctrl+V)
         elements.messageInput.addEventListener('paste', async (e) => {
-            if (!username) return;
-            
             const items = (e.clipboardData || window.clipboardData).items;
             for (let i = 0; i < items.length; i++) {
                 if (items[i].type.indexOf('image') !== -1) {
