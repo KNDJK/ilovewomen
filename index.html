@@ -575,7 +575,7 @@
                 elements.uploadStatusText.textContent = '¡Imagen subida con éxito!';
                 
                 // Optimizar la imagen automáticamente con Cloudinary
-                const optimizedUrl = `https://res.cloudinary.com/${cloudinaryConfig.cloudName}/image/upload/f_auto,q_auto/${result.info.public_id}`;
+                const optimizedUrl = optimizeImageUrl(result.info.public_id);
                 sendImageMessage(optimizedUrl);
                 
                 setTimeout(() => {
@@ -595,6 +595,87 @@
                 elements.uploadStatus.style.display = 'block';
             }
         });
+
+        // Función para optimizar la URL de la imagen
+        function optimizeImageUrl(publicId) {
+            // Parámetros de optimización:
+            // f_auto: formato automático (webp si el navegador lo soporta)
+            // q_auto: calidad automática
+            // w_800: ancho máximo de 800px
+            // c_limit: mantiene las proporciones
+            return `https://res.cloudinary.com/${cloudinaryConfig.cloudName}/image/upload/f_auto,q_auto,w_800,c_limit/${publicId}`;
+        }
+
+        // Función para subir imágenes pegadas (Ctrl+V)
+        async function uploadPastedImage(file) {
+            if (!username) {
+                showNotification("Primero ingresa tu nombre de usuario", false);
+                return;
+            }
+
+            // Verificar que sea una imagen
+            if (!file.type.match('image.*')) {
+                showNotification("Solo puedes subir imágenes", false);
+                return;
+            }
+
+            // Verificar tamaño (máximo 5MB)
+            if (file.size > 5 * 1024 * 1024) {
+                showNotification("La imagen es demasiado grande (máximo 5MB)", false);
+                return;
+            }
+
+            elements.uploadStatus.style.display = 'block';
+            elements.uploadProgress.style.width = '0%';
+            elements.uploadStatusText.textContent = 'Preparando imagen...';
+
+            try {
+                // Mostrar vista previa mientras se sube
+                const previewUrl = URL.createObjectURL(file);
+                const tempMessageId = 'temp-' + Date.now();
+                displayMessage({
+                    sender: username,
+                    content: `<div class="image-message"><img src="${previewUrl}" alt="Previsualización" style="max-width: 100%; border-radius: 8px; max-height: 300px; object-fit: contain; opacity: 0.7;"></div>`,
+                    timestamp: new Date().getTime()
+                }, tempMessageId, true);
+
+                // Crear formulario para subir a Cloudinary
+                const formData = new FormData();
+                formData.append('file', file);
+                formData.append('upload_preset', cloudinaryConfig.uploadPreset);
+                formData.append('folder', cloudinaryConfig.folder);
+                formData.append('cloud_name', cloudinaryConfig.cloudName);
+                formData.append('api_key', cloudinaryConfig.apiKey);
+
+                const response = await fetch(`https://api.cloudinary.com/v1_1/${cloudinaryConfig.cloudName}/upload`, {
+                    method: 'POST',
+                    body: formData,
+                });
+
+                const data = await response.json();
+
+                if (data.error) {
+                    throw new Error(data.error.message);
+                }
+
+                // Eliminar la vista previa
+                const tempElement = document.getElementById(`msg-${tempMessageId}`);
+                if (tempElement) tempElement.remove();
+
+                // Obtener URL optimizada
+                const optimizedUrl = optimizeImageUrl(data.public_id);
+                
+                // Enviar mensaje con la imagen final
+                sendImageMessage(optimizedUrl);
+                
+                showNotification('Imagen enviada');
+            } catch (error) {
+                console.error("Error al subir imagen:", error);
+                showNotification("Error al subir la imagen", false);
+            } finally {
+                elements.uploadStatus.style.display = 'none';
+            }
+        }
 
         // Función para enviar mensajes con imágenes
         function sendImageMessage(imageUrl) {
@@ -901,6 +982,21 @@
                 return;
             }
             myWidget.open();
+        });
+
+        // Manejar pegado de imágenes (Ctrl+V)
+        elements.messageInput.addEventListener('paste', async (e) => {
+            if (!username) return;
+            
+            const items = (e.clipboardData || window.clipboardData).items;
+            for (let i = 0; i < items.length; i++) {
+                if (items[i].type.indexOf('image') !== -1) {
+                    e.preventDefault();
+                    const blob = items[i].getAsFile();
+                    await uploadPastedImage(blob);
+                    return;
+                }
+            }
         });
         
         // Event listeners
