@@ -10,6 +10,8 @@
     <link rel="icon" href="logo.png" type="image/png">
     <!-- Librería de emojis -->
     <script src="https://cdn.jsdelivr.net/npm/emoji-picker-element@^1/index.js" type="module"></script>
+    <!-- SDK de Supabase -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         :root {
             --primary: #4361ee;
@@ -281,7 +283,6 @@
             box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
         }
 
-        /* Estilos para el botón de emojis y picker */
         .btn-emoji {
             background: transparent;
             border: none;
@@ -350,7 +351,6 @@
             width: auto;
         }
 
-        /* Nuevos estilos para imágenes */
         .image-message {
             margin-top: 8px;
             border-radius: var(--radius);
@@ -366,7 +366,6 @@
             border: 2px solid rgba(0, 0, 0, 0.05);
         }
 
-        /* Estilos para el modal de carga */
         #upload-status {
             display: none;
             position: fixed;
@@ -398,7 +397,6 @@
             transition: width 0.3s ease;
         }
 
-        /* Animaciones */
         @keyframes fadeInUp {
             from {
                 opacity: 0;
@@ -416,7 +414,6 @@
             100% { transform: scale(1); }
         }
 
-        /* Responsive */
         @media (max-width: 768px) {
             .chat-container {
                 height: 90vh;
@@ -451,7 +448,6 @@
         <span id="notification-message"></span>
     </div>
 
-    <!-- Modal de carga -->
     <div id="upload-status">
         <p id="upload-status-text">Subiendo imagen...</p>
         <div class="progress-bar">
@@ -500,15 +496,10 @@
         </div>
     </div>
 
-    <!-- Audio para notificaciones -->
     <audio id="notification-sound" preload="auto">
         <source src="https://assets.mixkit.co/sfx/preview/mixkit-positive-interface-beep-221.mp3" type="audio/mpeg">
     </audio>
 
-    <!-- SDK de Cloudinary -->
-    <script src="https://upload-widget.cloudinary.com/global/all.js" type="text/javascript"></script>
-    
-    <!-- Firebase -->
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
 
@@ -525,14 +516,16 @@
             measurementId: "G-NKE2WRMT83"
         };
 
-        // Configuración de Cloudinary
-        const cloudinaryConfig = {
-            cloudName: 'dob3xhs1b',
-            apiKey: '332996559628532',
-            uploadPreset: 'chat_uploads',
-            folder: 'chat_images'
+        // Configuración de Supabase con tus credenciales
+        const supabaseConfig = {
+            url: 'https://mlbjdyedhmtnxzoctthq.supabase.co',
+            key: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1sYmpkeWVkaG10bnh6b2N0dGhxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDk0OTEwNDAsImV4cCI6MjA2NTA2NzA0MH0.qyiMIofGCLearDUn5UnYU3y07U27iBlAZ-ET8KDe_Zc',
+            bucket: 'chat-images'
         };
 
+        // Inicializar Supabase
+        const supabase = supabase.createClient(supabaseConfig.url, supabaseConfig.key);
+        
         firebase.initializeApp(firebaseConfig);
         const database = firebase.database();
         const messagesRef = database.ref('messages');
@@ -569,104 +562,76 @@
         let isWindowFocused = true;
         let tempImageMessages = {};
 
-        // Inicializa el widget de Cloudinary
-        const myWidget = cloudinary.createUploadWidget({
-            cloudName: cloudinaryConfig.cloudName,
-            apiKey: cloudinaryConfig.apiKey,
-            uploadPreset: cloudinaryConfig.uploadPreset,
-            folder: cloudinaryConfig.folder,
-            sources: ['local', 'camera'],
-            multiple: false,
-            resourceType: 'image',
-            cropping: false,
-            showAdvancedOptions: false,
-            clientAllowedFormats: ['jpg', 'png', 'gif', 'webp'],
-            maxFileSize: 5000000, // 5MB
-            styles: {
-                palette: {
-                    window: "#FFFFFF",
-                    windowBorder: "#4361ee",
-                    tabIcon: "#4361ee",
-                    menuIcons: "#4361ee",
-                    textDark: "#000000",
-                    textLight: "#FFFFFF",
-                    link: "#4361ee",
-                    action: "#4361ee",
-                    inactiveTabIcon: "#B3B3B3",
-                    error: "#F44235",
-                    inProgress: "#4361ee",
-                    complete: "#20B832",
-                    sourceBg: "#E4EBF1"
-                }
-            }
-        }, handleCloudinaryUpload);
-
-        // Función para manejar la subida a Cloudinary
-        function handleCloudinaryUpload(error, result) {
-            if (!error && result && result.event === "success") {
-                elements.uploadProgress.style.width = '100%';
-                elements.uploadStatusText.textContent = '¡Imagen subida con éxito!';
-                
-                // Optimizar la imagen
-                const optimizedUrl = getOptimizedImageUrl(result.info.public_id);
-                sendImageMessage(optimizedUrl);
-                
-                setTimeout(() => {
-                    elements.uploadStatus.style.display = 'none';
-                }, 2000);
-            } else if (error) {
-                elements.uploadProgress.style.width = '0%';
-                elements.uploadStatusText.textContent = 'Error al subir la imagen: ' + (error.message || 'Intenta nuevamente');
-                setTimeout(() => {
-                    elements.uploadStatus.style.display = 'none';
-                }, 3000);
-            } else if (result && result.event === "progress") {
-                const progress = Math.round(result.info.progress * 100);
-                elements.uploadProgress.style.width = progress + '%';
-                elements.uploadStatusText.textContent = `Subiendo... ${progress}%`;
-            } else if (result && result.event === "display-changed") {
-                elements.uploadStatus.style.display = 'block';
-            }
-        }
-
-        // Función para obtener URL optimizada de imagen
-        function getOptimizedImageUrl(publicId) {
-            // Parámetros de optimización:
-            // f_auto: formato automático (WebP si compatible)
-            // q_auto: calidad automática
-            // w_800: ancho máximo 800px
-            // c_limit: mantiene proporciones
-            return `https://res.cloudinary.com/${cloudinaryConfig.cloudName}/image/upload/f_auto,q_auto,w_800,c_limit/${publicId}`;
-        }
-
-        // Función para subir imagen pegada (Ctrl+V)
-        async function uploadPastedImage(file) {
+        async function uploadImageToSupabase(file) {
             if (!username) {
                 showNotification("Primero ingresa tu nombre de usuario", false);
-                return;
+                return null;
             }
 
-            // Verificar que sea una imagen
             if (!file.type.match('image.*')) {
-                showNotification("Solo puedes subir imágenes", false);
-                return;
+                showNotification("Solo puedes subir imágenes (JPEG, PNG, GIF)", false);
+                return null;
             }
 
-            // Verificar tamaño (máximo 5MB)
             if (file.size > 5 * 1024 * 1024) {
                 showNotification("La imagen es demasiado grande (máximo 5MB)", false);
-                return;
+                return null;
             }
 
-            // Mostrar estado de carga
             elements.uploadStatus.style.display = 'block';
             elements.uploadProgress.style.width = '0%';
             elements.uploadStatusText.textContent = 'Preparando imagen...';
 
-            // Crear ID temporal para la vista previa
+            try {
+                const fileExt = file.name.split('.').pop();
+                const fileName = `${Date.now()}-${Math.random().toString(36).substring(2, 9)}.${fileExt}`;
+                const filePath = `${username}/${fileName}`;
+
+                elements.uploadProgress.style.width = '10%';
+                elements.uploadStatusText.textContent = 'Subiendo imagen...';
+
+                // Subir archivo a Supabase Storage
+                const { data, error } = await supabase.storage
+                    .from(supabaseConfig.bucket)
+                    .upload(filePath, file, {
+                        cacheControl: '3600',
+                        upsert: false,
+                        contentType: file.type
+                    });
+
+                if (error) throw error;
+
+                // Obtener URL pública
+                const { data: { publicUrl } } = supabase.storage
+                    .from(supabaseConfig.bucket)
+                    .getPublicUrl(filePath);
+
+                elements.uploadProgress.style.width = '100%';
+                elements.uploadStatusText.textContent = '¡Imagen subida con éxito!';
+                
+                setTimeout(() => {
+                    elements.uploadStatus.style.display = 'none';
+                }, 1500);
+
+                return publicUrl;
+            } catch (error) {
+                console.error("Error al subir imagen:", error);
+                elements.uploadStatusText.textContent = 'Error: ' + 
+                    (error.message || 'No se pudo subir la imagen');
+                elements.uploadProgress.style.backgroundColor = '#ff6b6b';
+                
+                setTimeout(() => {
+                    elements.uploadStatus.style.display = 'none';
+                    elements.uploadProgress.style.backgroundColor = '';
+                    elements.uploadProgress.style.width = '0%';
+                }, 3000);
+                
+                return null;
+            }
+        }
+
+        async function uploadPastedImage(file) {
             const tempId = 'temp-' + Date.now();
-            
-            // Mostrar vista previa
             const previewUrl = URL.createObjectURL(file);
             tempImageMessages[tempId] = {
                 element: createTempImageMessage(previewUrl),
@@ -674,53 +639,30 @@
             };
 
             try {
-                // Subir a Cloudinary
-                const formData = new FormData();
-                formData.append('file', file);
-                formData.append('upload_preset', cloudinaryConfig.uploadPreset);
-                formData.append('folder', cloudinaryConfig.folder);
-                formData.append('cloud_name', cloudinaryConfig.cloudName);
-                formData.append('api_key', cloudinaryConfig.apiKey);
-
-                const response = await fetch(`https://api.cloudinary.com/v1_1/${cloudinaryConfig.cloudName}/upload`, {
-                    method: 'POST',
-                    body: formData,
-                });
-
-                const data = await response.json();
-
-                if (data.error) {
-                    throw new Error(data.error.message);
+                const imageUrl = await uploadImageToSupabase(file);
+                
+                if (!imageUrl) {
+                    throw new Error("No se pudo obtener la URL de la imagen");
                 }
 
-                // Eliminar vista previa
                 if (tempImageMessages[tempId]) {
                     tempImageMessages[tempId].element.remove();
                     delete tempImageMessages[tempId];
                 }
 
-                // Obtener URL optimizada
-                const optimizedUrl = getOptimizedImageUrl(data.public_id);
-                
-                // Enviar mensaje con imagen final
-                sendImageMessage(optimizedUrl);
-                
+                sendImageMessage(imageUrl);
                 showNotification('Imagen enviada');
             } catch (error) {
                 console.error("Error al subir imagen:", error);
                 showNotification("Error al subir la imagen", false);
                 
-                // Eliminar vista previa si hay error
                 if (tempImageMessages[tempId]) {
                     tempImageMessages[tempId].element.remove();
                     delete tempImageMessages[tempId];
                 }
-            } finally {
-                elements.uploadStatus.style.display = 'none';
             }
         }
 
-        // Función para crear mensaje temporal de imagen
         function createTempImageMessage(imageUrl) {
             const messageElement = document.createElement('div');
             messageElement.className = 'message user-message';
@@ -739,7 +681,6 @@
             return messageElement;
         }
 
-        // Función para enviar mensajes con imágenes
         function sendImageMessage(imageUrl) {
             if (!username) return;
             
@@ -768,7 +709,6 @@
                 });
         }
 
-        // Verificar si la ventana tiene foco
         window.addEventListener('focus', () => {
             isWindowFocused = true;
         });
@@ -792,7 +732,6 @@
             elements.notification.style.backgroundColor = isSuccess ? 'var(--success)' : 'var(--warning)';
             elements.notification.classList.add('show');
             
-            // Reproducir sonido de notificación
             playNotificationSound();
             
             setTimeout(() => {
@@ -807,17 +746,14 @@
 
         function showNewMessageNotification() {
             if (!isWindowFocused) {
-                // Notificación del navegador
                 if (Notification.permission === "granted") {
                     new Notification("Smile", {
                         body: "¡Tienes un nuevo mensaje!",
                         icon: "logo.png"
                     });
                 }
-                // Notificación interna
                 showNotification("¡Nuevo mensaje en Smile!");
             } else {
-                // Solo sonido si la ventana tiene foco
                 playNotificationSound();
             }
         }
@@ -895,7 +831,6 @@
             }, 50);
         }
 
-        // Función auxiliar para escapar HTML
         function escapeHtml(unsafe) {
             return unsafe
                 .replace(/&/g, "&amp;")
@@ -1018,7 +953,6 @@
             textarea.style.height = (textarea.scrollHeight) + 'px';
         }
         
-        // Configuración del emoji picker
         elements.emojiButton.addEventListener('click', () => {
             elements.emojiPicker.classList.toggle('show');
         });
@@ -1029,23 +963,33 @@
             adjustTextareaHeight(elements.messageInput);
         });
 
-        // Cerrar el picker al hacer clic fuera
         document.addEventListener('click', (e) => {
             if (!elements.emojiButton.contains(e.target) && !elements.emojiPicker.contains(e.target)) {
                 elements.emojiPicker.classList.remove('show');
             }
         });
 
-        // Event listener para el botón de subir imagen
-        elements.uploadButton.addEventListener('click', () => {
+        elements.uploadButton.addEventListener('click', async () => {
             if (!username) {
                 showNotification("Primero ingresa tu nombre de usuario", false);
                 return;
             }
-            myWidget.open();
+
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = 'image/*';
+            input.capture = 'environment';
+            
+            input.onchange = async (e) => {
+                const file = e.target.files[0];
+                if (file) {
+                    await uploadPastedImage(file);
+                }
+            };
+            
+            input.click();
         });
 
-        // Manejar pegado de imágenes (Ctrl+V)
         elements.messageInput.addEventListener('paste', async (e) => {
             const items = (e.clipboardData || window.clipboardData).items;
             for (let i = 0; i < items.length; i++) {
@@ -1058,7 +1002,6 @@
             }
         });
         
-        // Event listeners
         elements.usernameInput.addEventListener('keypress', (e) => {
             if (e.key === 'Enter') setUsername();
         });
@@ -1079,7 +1022,6 @@
         
         elements.sendButton.addEventListener('click', sendMessage);
         
-        // Escuchar nuevos mensajes
         messagesRef.orderByChild('timestamp').on('child_added', (snapshot) => {
             const data = snapshot.val();
             const messageId = snapshot.key;
@@ -1087,7 +1029,6 @@
             if (data.sender !== username || data.type === 'system-message' || myMessages.has(messageId)) {
                 displayMessage(data, messageId, myMessages.has(messageId));
                 
-                // Mostrar notificación solo para mensajes nuevos de otros usuarios
                 if (data.sender !== username && !myMessages.has(messageId) && username) {
                     showNewMessageNotification();
                 }
@@ -1122,7 +1063,6 @@
             }
         });
 
-        // Inicializar círculos de fondo
         document.querySelectorAll('.circle').forEach(circle => {
             circle.style.opacity = '0.5';
         });
