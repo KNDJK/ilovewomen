@@ -433,6 +433,34 @@
                 font-size: 1rem;
             }
         }
+
+        @media (max-width: 480px) {
+            .chat-container {
+                height: 100vh;
+                max-height: none;
+                border-radius: 0;
+            }
+            
+            .message {
+                max-width: 85%;
+                padding: 10px 14px;
+                font-size: 0.9rem;
+            }
+            
+            .input-group {
+                gap: 8px;
+            }
+            
+            #message-input, #username-input {
+                padding: 12px 16px;
+                font-size: 0.95rem;
+            }
+            
+            .btn {
+                height: 48px;
+                min-width: 48px;
+            }
+        }
     </style>
 </head>
 <body>
@@ -686,9 +714,10 @@
             
             const messageObj = {
                 sender: username,
-                content: `<div class="image-message"><img src="${imageUrl}" alt="Imagen enviada" style="max-width: 100%; border-radius: 8px; max-height: 300px; object-fit: contain;"></div>`,
+                content: `<div class="image-message"><img src="${imageUrl}" alt="Imagen enviada" loading="lazy" style="max-width: 100%; border-radius: 8px; max-height: 300px; object-fit: contain;"></div>`,
                 timestamp: firebase.database.ServerValue.TIMESTAMP,
-                isImage: true
+                isImage: true,
+                imageUrl: imageUrl
             };
             
             const newMessageRef = messagesRef.push();
@@ -728,13 +757,17 @@
         }
 
         function showNotification(message, isSuccess = true) {
+            // Cancela cualquier notificación pendiente
+            clearTimeout(elements.notification.timeout);
+            
             elements.notificationMessage.textContent = message;
             elements.notification.style.backgroundColor = isSuccess ? 'var(--success)' : 'var(--warning)';
             elements.notification.classList.add('show');
             
             playNotificationSound();
             
-            setTimeout(() => {
+            // Guarda el timeout para poder cancelarlo
+            elements.notification.timeout = setTimeout(() => {
                 elements.notification.classList.remove('show');
             }, 2000);
         }
@@ -832,12 +865,14 @@
         }
 
         function escapeHtml(unsafe) {
+            if (!unsafe) return '';
             return unsafe
                 .replace(/&/g, "&amp;")
                 .replace(/</g, "&lt;")
                 .replace(/>/g, "&gt;")
                 .replace(/"/g, "&quot;")
-                .replace(/'/g, "&#039;");
+                .replace(/'/g, "&#039;")
+                .replace(/\//g, "&#x2F;");
         }
 
         function showTypingIndicator(typingUser) {
@@ -870,30 +905,38 @@
 
         function setUsername() {
             const newUsername = elements.usernameInput.value.trim();
-            if (newUsername) {
-                username = newUsername;
-                elements.userInfo.textContent = `¡Hola, ${username}! Estás listo para chatear.`;
-                elements.usernameInput.disabled = true;
-                elements.setUsernameBtn.disabled = true;
-                elements.messageGroup.style.display = 'flex';
-                elements.messageInput.disabled = false;
-                elements.sendButton.disabled = false;
-                elements.messageInput.focus();
-                
-                myPresenceRef = presenceRef.child(username);
-                myPresenceRef.set(true);
-                myPresenceRef.onDisconnect().remove();
-                
-                messagesRef.push({
-                    sender: 'Sistema',
-                    content: `${username} se ha unido al chat.`,
-                    type: 'system-message',
-                    timestamp: firebase.database.ServerValue.TIMESTAMP
-                });
-                
-                showNotification(`Bienvenido, ${username}!`);
-                requestNotificationPermission();
+            if (!newUsername) {
+                showNotification("Por favor ingresa un nombre válido", false);
+                return;
             }
+            
+            if (newUsername.length > 20) {
+                showNotification("El nombre no puede tener más de 20 caracteres", false);
+                return;
+            }
+
+            username = newUsername;
+            elements.userInfo.textContent = `¡Hola, ${username}! Estás listo para chatear.`;
+            elements.usernameInput.disabled = true;
+            elements.setUsernameBtn.disabled = true;
+            elements.messageGroup.style.display = 'flex';
+            elements.messageInput.disabled = false;
+            elements.sendButton.disabled = false;
+            elements.messageInput.focus();
+            
+            myPresenceRef = presenceRef.child(username);
+            myPresenceRef.set(true);
+            myPresenceRef.onDisconnect().remove();
+            
+            messagesRef.push({
+                sender: 'Sistema',
+                content: `${username} se ha unido al chat.`,
+                type: 'system-message',
+                timestamp: firebase.database.ServerValue.TIMESTAMP
+            });
+            
+            showNotification(`Bienvenido, ${username}!`);
+            requestNotificationPermission();
         }
         
         function sendMessage() {
@@ -1002,8 +1045,12 @@
             }
         });
         
-        elements.usernameInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') setUsername();
+        // Cambiado de keypress a keydown para mejor compatibilidad
+        elements.usernameInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault(); // Previene el comportamiento por defecto
+                setUsername();
+            }
         });
         
         elements.setUsernameBtn.addEventListener('click', setUsername);
@@ -1013,7 +1060,7 @@
             adjustTextareaHeight(this);
         });
         
-        elements.messageInput.addEventListener('keypress', (e) => {
+        elements.messageInput.addEventListener('keydown', (e) => {
             if (e.key === 'Enter' && !e.shiftKey) {
                 e.preventDefault();
                 sendMessage();
