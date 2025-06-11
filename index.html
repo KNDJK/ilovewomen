@@ -713,6 +713,129 @@
             color: white;
         }
 
+        /* Estilos para mensajes citados (reply) */
+        .reply-container {
+            background: rgba(0, 0, 0, 0.05);
+            border-left: 3px solid var(--primary);
+            padding: 8px 12px;
+            border-radius: var(--radius-sm);
+            margin-bottom: 8px;
+            font-size: 0.85rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .reply-sender {
+            font-weight: 600;
+            color: var(--primary);
+            margin-bottom: 4px;
+            display: block;
+        }
+
+        .reply-content {
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .reply-image {
+            max-width: 80px;
+            max-height: 60px;
+            border-radius: 4px;
+            margin-top: 4px;
+        }
+
+        .message-actions {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            display: none;
+            gap: 6px;
+        }
+
+        .message:hover .message-actions {
+            display: flex;
+        }
+
+        .message-action-btn {
+            background: rgba(0, 0, 0, 0.2);
+            border: none;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            cursor: pointer;
+            font-size: 12px;
+            transition: var(--transition);
+        }
+
+        .message-action-btn:hover {
+            background: rgba(0, 0, 0, 0.3);
+            transform: scale(1.1);
+        }
+
+        .other-message .message-action-btn {
+            background: rgba(0, 0, 0, 0.1);
+            color: var(--text);
+        }
+
+        .other-message .message-action-btn:hover {
+            background: rgba(0, 0, 0, 0.2);
+        }
+
+        /* Etiquetas */
+        .tag {
+            background-color: var(--accent);
+            color: white;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            margin-left: 6px;
+            display: inline-block;
+        }
+
+        /* Menú de etiquetado */
+        .tag-menu {
+            position: absolute;
+            bottom: 80px;
+            left: 16px;
+            background: white;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow-lg);
+            z-index: 10;
+            width: 200px;
+            max-height: 300px;
+            overflow-y: auto;
+            display: none;
+            flex-direction: column;
+            padding: 8px 0;
+        }
+
+        .tag-menu.show {
+            display: flex;
+        }
+
+        .tag-option {
+            padding: 8px 16px;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .tag-option:hover {
+            background: rgba(0, 0, 0, 0.05);
+        }
+
+        .tag-option.active {
+            background: var(--primary-light);
+            color: white;
+        }
+
         @media (max-width: 768px) {
             .chat-container {
                 height: 95vh;
@@ -862,11 +985,15 @@
                 <button id="upload-button" class="btn-emoji" title="Subir imagen">
                     <i class="fas fa-image"></i>
                 </button>
+                <button id="tag-button" class="btn-emoji" title="Etiquetar usuario">
+                    <i class="fas fa-at"></i>
+                </button>
                 <textarea id="message-input" placeholder="Escribe tu mensaje aquí..." rows="1" disabled></textarea>
                 <button id="send-button" class="btn" title="Enviar mensaje">
                     <i class="fas fa-paper-plane"></i>
                 </button>
                 <emoji-picker id="emoji-picker"></emoji-picker>
+                <div class="tag-menu" id="tag-menu"></div>
             </div>
         </div>
     </div>
@@ -923,6 +1050,8 @@
             emojiButton: document.getElementById('emoji-button'),
             emojiPicker: document.getElementById('emoji-picker'),
             uploadButton: document.getElementById('upload-button'),
+            tagButton: document.getElementById('tag-button'),
+            tagMenu: document.getElementById('tag-menu'),
             uploadStatus: document.getElementById('upload-status'),
             uploadProgress: document.getElementById('upload-progress'),
             uploadStatusText: document.getElementById('upload-status-text'),
@@ -950,6 +1079,8 @@
         let lastScrollPosition = 0;
         let currentImageIndex = 0;
         let imageMessages = [];
+        let replyingTo = null;
+        let onlineUsers = [];
 
         // Función para mostrar notificaciones
         function showNotification(message, type = 'success') {
@@ -970,8 +1101,11 @@
         // Función para reproducir sonido de notificación
         function playNotificationSound() {
             if (elements.notificationSound) {
-                elements.notificationSound.currentTime = 0;
-                elements.notificationSound.play().catch(e => console.log("Error al reproducir sonido:", e));
+                // Solo reproducir si el usuario ya ha interactuado con la página
+                if (window.userInteracted) {
+                    elements.notificationSound.currentTime = 0;
+                    elements.notificationSound.play().catch(e => console.log("Error al reproducir sonido:", e));
+                }
             }
         }
 
@@ -1098,12 +1232,20 @@
         // Función para enviar mensaje
         function sendMessage() {
             const message = elements.messageInput.value.trim();
-            if (message && username) {
+            if ((message || replyingTo) && username) {
                 const messageObj = {
                     sender: username,
                     content: message,
                     timestamp: firebase.database.ServerValue.TIMESTAMP
                 };
+                
+                // Agregar información de respuesta si existe
+                if (replyingTo) {
+                    messageObj.replyTo = replyingTo.id;
+                    messageObj.replyContent = replyingTo.content;
+                    messageObj.replySender = replyingTo.sender;
+                    messageObj.replyIsImage = replyingTo.isImage;
+                }
                 
                 const newMessageRef = messagesRef.push();
                 const messageId = newMessageRef.key;
@@ -1129,6 +1271,9 @@
                 elements.messageInput.value = '';
                 adjustTextareaHeight(elements.messageInput);
                 elements.messageInput.focus();
+                
+                // Limpiar estado de respuesta
+                replyingTo = null;
                 
                 clearTimeout(typingTimeout);
                 isTyping = false;
@@ -1156,15 +1301,72 @@
                 myMessages.add(messageId);
             }
             
+            // Contenido del mensaje
+            let messageContent = data.isImage ? data.content : `<div class="message-content">${escapeHtml(data.content)}</div>`;
+            
+            // Agregar etiquetas si existen
+            if (data.tags && data.tags.length > 0) {
+                const tagsHtml = data.tags.map(tag => `<span class="tag">@${tag}</span>`).join('');
+                messageContent += `<div style="margin-top: 8px;">${tagsHtml}</div>`;
+            }
+            
+            // Agregar respuesta si existe
+            let replyContent = '';
+            if (data.replyTo) {
+                let replyText = data.replyIsImage ? '[Imagen]' : 
+                              data.replyContent.length > 50 ? 
+                              data.replyContent.substring(0, 50) + '...' : 
+                              data.replyContent;
+                
+                replyContent = `
+                    <div class="reply-container">
+                        <span class="reply-sender">${data.replySender}</span>
+                        <span class="reply-content">${escapeHtml(replyText)}</span>
+                        ${data.replyIsImage ? '<img src="' + data.replyContent + '" class="reply-image" loading="lazy">' : ''}
+                    </div>
+                `;
+            }
+            
             messageElement.innerHTML = `
                 <div class="message-sender">
                     ${data.sender}
                     <span class="message-time">${time} ${status}</span>
                 </div>
-                ${data.isImage ? data.content : `<div class="message-content">${escapeHtml(data.content)}</div>`}
+                ${replyContent}
+                ${messageContent}
+                <div class="message-actions">
+                    <button class="message-action-btn" title="Responder" data-message-id="${messageId}">
+                        <i class="fas fa-reply"></i>
+                    </button>
+                </div>
             `;
             
             elements.chatMessages.appendChild(messageElement);
+            
+            // Configurar evento de respuesta
+            const replyButton = messageElement.querySelector('.message-action-btn');
+            if (replyButton) {
+                replyButton.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const messageId = e.currentTarget.dataset.messageId;
+                    const messageElement = document.getElementById(`msg-${messageId}`);
+                    if (messageElement) {
+                        const sender = messageElement.querySelector('.message-sender').textContent.trim().replace(/\s+.*$/, '');
+                        const content = messageElement.querySelector('.message-content')?.textContent || 
+                                        (messageElement.querySelector('.image-message img') ? '[Imagen]' : '[Mensaje]');
+                        
+                        replyingTo = {
+                            id: messageId,
+                            sender: sender,
+                            content: content,
+                            isImage: !!messageElement.querySelector('.image-message img')
+                        };
+                        
+                        elements.messageInput.focus();
+                        showNotification(`Respondiendo a ${sender}`, 'success');
+                    }
+                });
+            }
             
             // Si es una imagen, agregar al array de imágenes
             if (data.isImage && data.imageUrl) {
@@ -1404,6 +1606,14 @@
                 imageUrl: imageUrl  // Guardamos la URL completa para referencia futura
             };
             
+            // Agregar información de respuesta si existe
+            if (replyingTo) {
+                messageObj.replyTo = replyingTo.id;
+                messageObj.replyContent = replyingTo.content;
+                messageObj.replySender = replyingTo.sender;
+                messageObj.replyIsImage = replyingTo.isImage;
+            }
+            
             const newMessageRef = messagesRef.push();
             const messageId = newMessageRef.key;
             
@@ -1415,6 +1625,8 @@
             newMessageRef.set(messageObj)
                 .then(() => {
                     showNotification('Imagen enviada');
+                    // Limpiar estado de respuesta
+                    replyingTo = null;
                 })
                 .catch(error => {
                     console.error("Error al enviar imagen:", error);
@@ -1553,9 +1765,49 @@
             }
         }
 
+        // Función para mostrar menú de etiquetado
+        function showTagMenu() {
+            if (!username || onlineUsers.length === 0) {
+                showNotification("No hay usuarios disponibles para etiquetar", "warning");
+                return;
+            }
+            
+            elements.tagMenu.innerHTML = '';
+            onlineUsers.forEach(user => {
+                if (user !== username) {
+                    const option = document.createElement('div');
+                    option.className = 'tag-option';
+                    option.textContent = `@${user}`;
+                    option.addEventListener('click', () => {
+                        const cursorPos = elements.messageInput.selectionStart;
+                        const textBefore = elements.messageInput.value.substring(0, cursorPos);
+                        const textAfter = elements.messageInput.value.substring(cursorPos);
+                        
+                        elements.messageInput.value = textBefore + `@${user} ` + textAfter;
+                        
+                        // Mover el cursor después del nombre insertado
+                        const newCursorPos = cursorPos + user.length + 2;
+                        elements.messageInput.setSelectionRange(newCursorPos, newCursorPos);
+                        
+                        elements.messageInput.focus();
+                        adjustTextareaHeight(elements.messageInput);
+                        elements.tagMenu.classList.remove('show');
+                    });
+                    elements.tagMenu.appendChild(option);
+                }
+            });
+            
+            elements.tagMenu.classList.add('show');
+        }
+
         // Inicialización de la aplicación
         document.addEventListener('DOMContentLoaded', () => {
             try {
+                // Marcar cuando el usuario interactúa por primera vez
+                document.addEventListener('click', () => {
+                    window.userInteracted = true;
+                }, { once: true });
+
                 // Inicializar Firebase
                 const firebaseApp = firebase.initializeApp(firebaseConfig);
                 database = firebase.database();
@@ -1593,6 +1845,7 @@
                 elements.emojiButton.addEventListener('click', (e) => {
                     e.stopPropagation();
                     elements.emojiPicker.classList.toggle('show');
+                    elements.tagMenu.classList.remove('show');
                 });
 
                 elements.emojiPicker.addEventListener('emoji-click', (event) => {
@@ -1613,6 +1866,10 @@
                 document.addEventListener('click', (e) => {
                     if (!elements.emojiButton.contains(e.target) && !elements.emojiPicker.contains(e.target)) {
                         elements.emojiPicker.classList.remove('show');
+                    }
+                    
+                    if (!elements.tagButton.contains(e.target) && !elements.tagMenu.contains(e.target)) {
+                        elements.tagMenu.classList.remove('show');
                     }
                 });
 
@@ -1635,6 +1892,21 @@
                     };
                     
                     input.click();
+                });
+
+                elements.tagButton.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    if (!username) {
+                        showNotification("Primero ingresa tu nombre de usuario", "warning");
+                        return;
+                    }
+                    
+                    if (onlineUsers.length > 1) {
+                        showTagMenu();
+                        elements.emojiPicker.classList.remove('show');
+                    } else {
+                        showNotification("No hay otros usuarios conectados para etiquetar", "warning");
+                    }
                 });
 
                 elements.messageInput.addEventListener('paste', async (e) => {
@@ -1699,7 +1971,8 @@
                 
                 presenceRef.on('value', (snapshot) => {
                     const users = snapshot.val() || {};
-                    const count = Object.keys(users).length;
+                    onlineUsers = Object.keys(users);
+                    const count = onlineUsers.length;
                     elements.onlineUsers.textContent = count;
                 });
                 
