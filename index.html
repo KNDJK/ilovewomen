@@ -444,6 +444,7 @@
             overflow: hidden;
             box-shadow: var(--shadow-sm);
             transition: var(--transition);
+            cursor: pointer;
         }
 
         .image-message:hover {
@@ -595,6 +596,123 @@
             background-color: var(--primary-light);
         }
 
+        /* Lightbox para imágenes */
+        .lightbox {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.9);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .lightbox-content {
+            max-width: 90%;
+            max-height: 90%;
+        }
+
+        .lightbox-content img {
+            max-width: 100%;
+            max-height: 90vh;
+            object-fit: contain;
+            border-radius: var(--radius-sm);
+        }
+
+        .lightbox-close {
+            position: absolute;
+            top: 20px;
+            right: 30px;
+            color: white;
+            font-size: 2.5rem;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .lightbox-close:hover {
+            color: var(--accent);
+        }
+
+        .lightbox-nav {
+            position: absolute;
+            top: 50%;
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            padding: 0 20px;
+            transform: translateY(-50%);
+        }
+
+        .lightbox-nav-btn {
+            color: white;
+            font-size: 2rem;
+            cursor: pointer;
+            background: rgba(0, 0, 0, 0.5);
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: var(--transition);
+        }
+
+        .lightbox-nav-btn:hover {
+            background: var(--primary);
+        }
+
+        /* Confirmación de imagen */
+        .image-confirmation {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            padding: 25px;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow-lg);
+            z-index: 1000;
+            text-align: center;
+            max-width: 400px;
+            width: 90%;
+        }
+
+        .image-confirmation-preview {
+            max-width: 100%;
+            max-height: 200px;
+            margin: 15px 0;
+            border-radius: var(--radius-sm);
+        }
+
+        .image-confirmation-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .image-confirmation-btn {
+            padding: 10px 20px;
+            border-radius: var(--radius);
+            cursor: pointer;
+            font-weight: 500;
+            transition: var(--transition);
+        }
+
+        .image-confirm {
+            background: var(--success);
+            color: white;
+        }
+
+        .image-cancel {
+            background: var(--error);
+            color: white;
+        }
+
         @media (max-width: 768px) {
             .chat-container {
                 height: 95vh;
@@ -676,6 +794,28 @@
         <div class="circle" style="width: 200px; height: 200px; top: 70%; left: 80%; animation-delay: 5s; animation-duration: 20s;"></div>
         <div class="circle" style="width: 150px; height: 150px; top: 80%; left: 15%; animation-delay: 10s; animation-duration: 30s;"></div>
         <div class="circle" style="width: 250px; height: 250px; top: 5%; left: 75%; animation-delay: 15s; animation-duration: 22s;"></div>
+    </div>
+
+    <!-- Lightbox para imágenes -->
+    <div class="lightbox" id="lightbox">
+        <span class="lightbox-close" id="lightbox-close">&times;</span>
+        <div class="lightbox-nav">
+            <div class="lightbox-nav-btn" id="lightbox-prev"><i class="fas fa-chevron-left"></i></div>
+            <div class="lightbox-nav-btn" id="lightbox-next"><i class="fas fa-chevron-right"></i></div>
+        </div>
+        <div class="lightbox-content">
+            <img id="lightbox-image" src="" alt="Imagen ampliada">
+        </div>
+    </div>
+
+    <!-- Confirmación de imagen -->
+    <div class="image-confirmation" id="image-confirmation">
+        <h3>¿Enviar esta imagen?</h3>
+        <img id="image-confirmation-preview" class="image-confirmation-preview" src="" alt="Previsualización">
+        <div class="image-confirmation-buttons">
+            <button class="image-confirmation-btn image-confirm" id="confirm-image">Enviar</button>
+            <button class="image-confirmation-btn image-cancel" id="cancel-image">Cancelar</button>
+        </div>
     </div>
 
     <div class="notification" id="notification">
@@ -786,7 +926,16 @@
             uploadStatus: document.getElementById('upload-status'),
             uploadProgress: document.getElementById('upload-progress'),
             uploadStatusText: document.getElementById('upload-status-text'),
-            scrollDownBtn: document.getElementById('scroll-down-btn')
+            scrollDownBtn: document.getElementById('scroll-down-btn'),
+            lightbox: document.getElementById('lightbox'),
+            lightboxImage: document.getElementById('lightbox-image'),
+            lightboxClose: document.getElementById('lightbox-close'),
+            lightboxPrev: document.getElementById('lightbox-prev'),
+            lightboxNext: document.getElementById('lightbox-next'),
+            imageConfirmation: document.getElementById('image-confirmation'),
+            imageConfirmationPreview: document.getElementById('image-confirmation-preview'),
+            confirmImageBtn: document.getElementById('confirm-image'),
+            cancelImageBtn: document.getElementById('cancel-image')
         };
 
         // Variables globales
@@ -799,6 +948,8 @@
         let tempImageMessages = {};
         let database, messagesRef, typingRef, presenceRef, supabaseClient;
         let lastScrollPosition = 0;
+        let currentImageIndex = 0;
+        let imageMessages = [];
 
         // Función para mostrar notificaciones
         function showNotification(message, type = 'success') {
@@ -1015,6 +1166,20 @@
             
             elements.chatMessages.appendChild(messageElement);
             
+            // Si es una imagen, agregar al array de imágenes
+            if (data.isImage && data.imageUrl) {
+                const imgElement = messageElement.querySelector('img');
+                if (imgElement) {
+                    imgElement.dataset.messageId = messageId;
+                    imgElement.addEventListener('click', openLightbox);
+                    imageMessages.push({
+                        id: messageId,
+                        url: data.imageUrl,
+                        element: imgElement
+                    });
+                }
+            }
+            
             const timeLeft = 3600000 - (Date.now() - timestamp.getTime());
             if (timeLeft > 0) {
                 setTimeout(() => {
@@ -1036,6 +1201,12 @@
                         messagesRef.child(messageId).remove()
                             .catch(e => console.error("Error al eliminar mensaje:", e));
                         myMessages.delete(messageId);
+                        
+                        // Eliminar de imageMessages
+                        const index = imageMessages.findIndex(img => img.id === messageId);
+                        if (index !== -1) {
+                            imageMessages.splice(index, 1);
+                        }
                     }
                 }, timeLeft);
             }
@@ -1045,6 +1216,38 @@
                 messageElement.style.transform = 'translateY(0)';
                 scrollToBottom();
             }, 50);
+        }
+
+        // Función para abrir lightbox con la imagen
+        function openLightbox(e) {
+            const clickedImage = e.target;
+            const messageId = clickedImage.dataset.messageId;
+            
+            // Encontrar el índice de la imagen clickeada
+            currentImageIndex = imageMessages.findIndex(img => img.id === messageId);
+            
+            if (currentImageIndex !== -1) {
+                elements.lightboxImage.src = imageMessages[currentImageIndex].url;
+                elements.lightbox.style.display = 'flex';
+                document.body.style.overflow = 'hidden';
+            }
+        }
+
+        // Función para cerrar lightbox
+        function closeLightbox() {
+            elements.lightbox.style.display = 'none';
+            document.body.style.overflow = 'auto';
+        }
+
+        // Función para navegar entre imágenes en el lightbox
+        function navigateLightbox(direction) {
+            if (direction === 'prev') {
+                currentImageIndex = (currentImageIndex - 1 + imageMessages.length) % imageMessages.length;
+            } else {
+                currentImageIndex = (currentImageIndex + 1) % imageMessages.length;
+            }
+            
+            elements.lightboxImage.src = imageMessages[currentImageIndex].url;
         }
 
         // Función para subir imagen a Supabase
@@ -1119,34 +1322,55 @@
         async function uploadPastedImage(file) {
             const tempId = 'temp-' + Date.now();
             const previewUrl = URL.createObjectURL(file);
-            tempImageMessages[tempId] = {
-                element: createTempImageMessage(previewUrl),
-                url: previewUrl
-            };
+            
+            // Mostrar confirmación antes de subir
+            elements.imageConfirmationPreview.src = previewUrl;
+            elements.imageConfirmation.style.display = 'block';
+            
+            // Esperar confirmación del usuario
+            return new Promise((resolve) => {
+                elements.confirmImageBtn.onclick = async () => {
+                    elements.imageConfirmation.style.display = 'none';
+                    
+                    const tempElement = createTempImageMessage(previewUrl);
+                    tempImageMessages[tempId] = {
+                        element: tempElement,
+                        url: previewUrl
+                    };
 
-            try {
-                const imageUrl = await uploadImageToSupabase(file);
+                    try {
+                        const imageUrl = await uploadImageToSupabase(file);
+                        
+                        if (!imageUrl) {
+                            throw new Error("No se pudo obtener la URL de la imagen");
+                        }
+
+                        if (tempImageMessages[tempId]) {
+                            tempImageMessages[tempId].element.remove();
+                            delete tempImageMessages[tempId];
+                        }
+
+                        sendImageMessage(imageUrl);
+                        showNotification('Imagen enviada');
+                        resolve(true);
+                    } catch (error) {
+                        console.error("Error al subir imagen:", error);
+                        showNotification("Error al subir la imagen", "error");
+                        
+                        if (tempImageMessages[tempId]) {
+                            tempImageMessages[tempId].element.remove();
+                            delete tempImageMessages[tempId];
+                        }
+                        resolve(false);
+                    }
+                };
                 
-                if (!imageUrl) {
-                    throw new Error("No se pudo obtener la URL de la imagen");
-                }
-
-                if (tempImageMessages[tempId]) {
-                    tempImageMessages[tempId].element.remove();
-                    delete tempImageMessages[tempId];
-                }
-
-                sendImageMessage(imageUrl);
-                showNotification('Imagen enviada');
-            } catch (error) {
-                console.error("Error al subir imagen:", error);
-                showNotification("Error al subir la imagen", "error");
-                
-                if (tempImageMessages[tempId]) {
-                    tempImageMessages[tempId].element.remove();
-                    delete tempImageMessages[tempId];
-                }
-            }
+                elements.cancelImageBtn.onclick = () => {
+                    elements.imageConfirmation.style.display = 'none';
+                    URL.revokeObjectURL(previewUrl);
+                    resolve(false);
+                };
+            });
         }
 
         // Función para crear mensaje temporal de imagen
@@ -1254,6 +1478,12 @@
                         const msgElement = document.getElementById(`msg-${child.key}`);
                         if (msgElement) msgElement.remove();
                         myMessages.delete(child.key);
+                        
+                        // Eliminar de imageMessages
+                        const index = imageMessages.findIndex(img => img.id === child.key);
+                        if (index !== -1) {
+                            imageMessages.splice(index, 1);
+                        }
                     });
                     
                     messagesRef.update(updates)
@@ -1360,12 +1590,22 @@
                 
                 elements.sendButton.addEventListener('click', sendMessage);
                 
-                elements.emojiButton.addEventListener('click', () => {
+                elements.emojiButton.addEventListener('click', (e) => {
+                    e.stopPropagation();
                     elements.emojiPicker.classList.toggle('show');
                 });
 
                 elements.emojiPicker.addEventListener('emoji-click', (event) => {
-                    elements.messageInput.value += event.detail.unicode;
+                    const cursorPos = elements.messageInput.selectionStart;
+                    const textBefore = elements.messageInput.value.substring(0, cursorPos);
+                    const textAfter = elements.messageInput.value.substring(cursorPos);
+                    
+                    elements.messageInput.value = textBefore + event.detail.unicode + textAfter;
+                    
+                    // Mover el cursor después del emoji insertado
+                    const newCursorPos = cursorPos + event.detail.unicode.length;
+                    elements.messageInput.setSelectionRange(newCursorPos, newCursorPos);
+                    
                     elements.messageInput.focus();
                     adjustTextareaHeight(elements.messageInput);
                 });
@@ -1409,6 +1649,24 @@
                     }
                 });
 
+                // Configurar lightbox
+                elements.lightboxClose.addEventListener('click', closeLightbox);
+                elements.lightbox.addEventListener('click', (e) => {
+                    if (e.target === elements.lightbox) {
+                        closeLightbox();
+                    }
+                });
+                
+                elements.lightboxPrev.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    navigateLightbox('prev');
+                });
+                
+                elements.lightboxNext.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    navigateLightbox('next');
+                });
+                
                 // Configurar listeners de Firebase
                 messagesRef.orderByChild('timestamp').on('child_added', (snapshot) => {
                     const data = snapshot.val();
