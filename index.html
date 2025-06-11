@@ -10,26 +10,28 @@
     <script src="https://cdn.jsdelivr.net/npm/emoji-picker-element@^1/index.js" type="module"></script>
     <style>
         :root {
-            --primary: #4361ee;
-            --primary-light: #5a75f1;
-            --secondary: #3a0ca3;
-            --accent: #4cc9f0;
-            --accent-dark: #2bb4db;
-            --dark: #2b2d42;
-            --light: #f8f9fa;
-            --light-gray: #e9ecef;
-            --text: #495057;
-            --text-light: #6c757d;
-            --success: #2ecc71;
-            --warning: #f39c12;
-            --error: #e74c3c;
-            --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.12);
+            --primary: #6c5ce7;
+            --primary-light: #8576e9;
+            --primary-dark: #5649c0;
+            --secondary: #00cec9;
+            --accent: #fd79a8;
+            --accent-dark: #e84393;
+            --dark: #2d3436;
+            --light: #f5f6fa;
+            --light-gray: #dfe6e9;
+            --text: #2d3436;
+            --text-light: #636e72;
+            --success: #00b894;
+            --warning: #fdcb6e;
+            --error: #d63031;
+            --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.08);
             --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
             --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1);
-            --radius: 12px;
+            --radius: 16px;
             --radius-sm: 8px;
             --transition: all 0.25s ease;
             --animation-duration: 0.3s;
+            --chat-colors: #6c5ce7, #00cec9, #fd79a8, #00b894, #fdcb6e, #0984e3, #e84393;
         }
         
         * {
@@ -52,21 +54,20 @@
             line-height: 1.6;
         }
         
-        .background {
+        .gradient-bg {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
             z-index: -1;
-            overflow: hidden;
             background: linear-gradient(135deg, #f5f7fa 0%, #e6f0ff 100%);
         }
         
-        .circle {
+        .bubble {
             position: absolute;
             border-radius: 50%;
-            background: rgba(67, 97, 238, 0.08);
+            background: rgba(108, 92, 231, 0.08);
             animation: float 15s infinite linear;
             opacity: 0;
         }
@@ -90,7 +91,7 @@
         
         .chat-container {
             width: 100%;
-            max-width: 900px;
+            max-width: 1000px;
             height: 90vh;
             max-height: 800px;
             border-radius: var(--radius);
@@ -106,9 +107,9 @@
         }
         
         .chat-header {
-            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
             color: white;
-            padding: 15px 25px;
+            padding: 18px 25px;
             position: relative;
             display: flex;
             justify-content: space-between;
@@ -178,7 +179,7 @@
         }
         
         .user-info {
-            background-color: var(--accent);
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
             color: white;
             padding: 14px 22px;
             border-radius: var(--radius);
@@ -206,6 +207,7 @@
             line-height: 1.6;
         }
         
+        /* Colores alternados para mensajes */
         .message.user-message {
             margin-left: auto;
             background-color: var(--primary);
@@ -213,10 +215,7 @@
             border-bottom-right-radius: var(--radius-sm);
         }
         
-        .message.user-message:hover {
-            background-color: var(--primary-light);
-        }
-        
+        /* Mensajes de otros usuarios con diferentes colores */
         .message.other-message {
             margin-right: auto;
             background-color: white;
@@ -225,13 +224,32 @@
             border-bottom-left-radius: var(--radius-sm);
         }
         
-        .message.other-message:hover {
-            box-shadow: var(--shadow-md);
+        /* Asignar colores diferentes a cada usuario */
+        .message[data-sender-index="0"] {
+            border-left: 4px solid #6c5ce7;
+        }
+        .message[data-sender-index="1"] {
+            border-left: 4px solid #00cec9;
+        }
+        .message[data-sender-index="2"] {
+            border-left: 4px solid #fd79a8;
+        }
+        .message[data-sender-index="3"] {
+            border-left: 4px solid #00b894;
+        }
+        .message[data-sender-index="4"] {
+            border-left: 4px solid #fdcb6e;
+        }
+        .message[data-sender-index="5"] {
+            border-left: 4px solid #0984e3;
+        }
+        .message[data-sender-index="6"] {
+            border-left: 4px solid #e84393;
         }
         
         .message.system-message {
             margin: 0 auto;
-            background-color: var(--accent);
+            background: linear-gradient(135deg, var(--secondary) 0%, var(--primary) 100%);
             color: white;
             text-align: center;
             max-width: 75%;
@@ -241,7 +259,7 @@
         }
         
         .message-system-message:hover {
-            background-color: var(--accent-dark);
+            background: linear-gradient(135deg, var(--secondary) 0%, var(--primary-dark) 100%);
         }
         
         .message-sender {
@@ -305,7 +323,7 @@
         
         #username-input:focus {
             border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.2);
+            box-shadow: 0 0 0 3px rgba(108, 92, 231, 0.2);
         }
         
         #message-input {
@@ -326,11 +344,11 @@
         
         #message-input:focus {
             border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.2);
+            box-shadow: 0 0 0 3px rgba(108, 92, 231, 0.2);
         }
         
         .btn {
-            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
             color: white;
             border: none;
             padding: 0 22px;
@@ -350,7 +368,7 @@
         .btn:hover {
             transform: translateY(-2px);
             box-shadow: var(--shadow-md);
-            background: linear-gradient(135deg, var(--primary-light) 0%, var(--secondary) 100%);
+            background: linear-gradient(135deg, var(--primary-light) 0%, var(--primary-dark) 100%);
         }
 
         .btn:active {
@@ -373,15 +391,15 @@
         }
 
         .btn-emoji:hover {
-            color: var(--secondary);
-            background-color: rgba(67, 97, 238, 0.1);
+            color: var(--primary-dark);
+            background-color: rgba(108, 92, 231, 0.1);
             transform: scale(1.1);
         }
 
         emoji-picker {
             --background: white;
             --border-color: rgba(0, 0, 0, 0.05);
-            --input-border-color: #e9ecef;
+            --input-border-color: #dfe6e9;
             --input-font-size: 1rem;
             --category-emoji-padding: 0.5rem;
             position: absolute;
@@ -407,7 +425,7 @@
             bottom: 25px;
             left: 50%;
             transform: translateX(-50%);
-            background-color: var(--success);
+            background: linear-gradient(135deg, var(--success) 0%, var(--primary) 100%);
             color: white;
             padding: 14px 28px;
             border-radius: var(--radius);
@@ -426,11 +444,11 @@
         }
 
         .notification.error {
-            background-color: var(--error);
+            background: linear-gradient(135deg, var(--error) 0%, var(--accent-dark) 100%);
         }
 
         .notification.warning {
-            background-color: var(--warning);
+            background: linear-gradient(135deg, var(--warning) 0%, var(--accent) 100%);
         }
 
         .notification-logo {
@@ -495,7 +513,7 @@
         #upload-progress {
             height: 100%;
             width: 0%;
-            background: linear-gradient(90deg, var(--primary), var(--accent));
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
             transition: width 0.3s ease;
         }
 
@@ -570,7 +588,7 @@
             position: absolute;
             bottom: 80px;
             right: 30px;
-            background-color: var(--primary);
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
             color: white;
             width: 40px;
             height: 40px;
@@ -593,7 +611,7 @@
 
         .scroll-down-btn:hover {
             opacity: 1;
-            background-color: var(--primary-light);
+            background: linear-gradient(135deg, var(--primary-light) 0%, var(--secondary) 100%);
         }
 
         /* Lightbox para imágenes */
@@ -836,6 +854,82 @@
             color: white;
         }
 
+        /* Animación de entrada para mensajes */
+        @keyframes messageIn {
+            0% {
+                opacity: 0;
+                transform: translateY(10px) scale(0.95);
+            }
+            100% {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        /* Efecto de onda al enviar mensaje */
+        .wave-effect {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 5px;
+            height: 5px;
+            background: rgba(108, 92, 231, 0.4);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            animation: wave 0.6s ease-out;
+            pointer-events: none;
+        }
+
+        @keyframes wave {
+            0% {
+                width: 5px;
+                height: 5px;
+                opacity: 0.8;
+            }
+            100% {
+                width: 200px;
+                height: 200px;
+                opacity: 0;
+            }
+        }
+
+        /* Efecto de carga */
+        .loading-dots {
+            display: flex;
+            justify-content: center;
+            gap: 6px;
+            margin: 20px 0;
+        }
+
+        .loading-dot {
+            width: 10px;
+            height: 10px;
+            background-color: var(--primary);
+            border-radius: 50%;
+            animation: loadingAnimation 1.4s infinite ease-in-out;
+        }
+
+        .loading-dot:nth-child(1) {
+            animation-delay: 0s;
+        }
+
+        .loading-dot:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .loading-dot:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+
+        @keyframes loadingAnimation {
+            0%, 60%, 100% {
+                transform: translateY(0);
+            }
+            30% {
+                transform: translateY(-10px);
+            }
+        }
+
         @media (max-width: 768px) {
             .chat-container {
                 height: 95vh;
@@ -912,11 +1006,11 @@
     </style>
 </head>
 <body>
-    <div class="background">
-        <div class="circle" style="width: 300px; height: 300px; top: 10%; left: 5%; animation-duration: 25s;"></div>
-        <div class="circle" style="width: 200px; height: 200px; top: 70%; left: 80%; animation-delay: 5s; animation-duration: 20s;"></div>
-        <div class="circle" style="width: 150px; height: 150px; top: 80%; left: 15%; animation-delay: 10s; animation-duration: 30s;"></div>
-        <div class="circle" style="width: 250px; height: 250px; top: 5%; left: 75%; animation-delay: 15s; animation-duration: 22s;"></div>
+    <div class="gradient-bg">
+        <div class="bubble" style="width: 300px; height: 300px; top: 10%; left: 5%; animation-duration: 25s;"></div>
+        <div class="bubble" style="width: 200px; height: 200px; top: 70%; left: 80%; animation-delay: 5s; animation-duration: 20s;"></div>
+        <div class="bubble" style="width: 150px; height: 150px; top: 80%; left: 15%; animation-delay: 10s; animation-duration: 30s;"></div>
+        <div class="bubble" style="width: 250px; height: 250px; top: 5%; left: 75%; animation-delay: 15s; animation-duration: 22s;"></div>
     </div>
 
     <!-- Lightbox para imágenes -->
@@ -1081,6 +1175,7 @@
         let imageMessages = [];
         let replyingTo = null;
         let onlineUsers = [];
+        let userColorMap = {};
 
         // Función para mostrar notificaciones
         function showNotification(message, type = 'success') {
@@ -1135,6 +1230,24 @@
         // Función para formatear hora
         function formatTime(date) {
             return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        }
+
+        // Función para obtener color único para cada usuario
+        function getUserColor(username) {
+            if (!userColorMap[username]) {
+                const colors = ['#6c5ce7', '#00cec9', '#fd79a8', '#00b894', '#fdcb6e', '#0984e3', '#e84393'];
+                const index = Object.keys(userColorMap).length % colors.length;
+                userColorMap[username] = colors[index];
+            }
+            return userColorMap[username];
+        }
+
+        // Función para obtener índice de color para el usuario
+        function getUserColorIndex(username) {
+            if (!userColorMap[username]) {
+                getUserColor(username); // Asegurarse de que el color está asignado
+            }
+            return Object.keys(userColorMap).indexOf(username) % 7;
         }
 
         // Función para borrar imagen de Supabase
@@ -1233,6 +1346,12 @@
         function sendMessage() {
             const message = elements.messageInput.value.trim();
             if ((message || replyingTo) && username) {
+                // Crear efecto visual al enviar
+                const wave = document.createElement('div');
+                wave.className = 'wave-effect';
+                elements.sendButton.appendChild(wave);
+                setTimeout(() => wave.remove(), 600);
+                
                 const messageObj = {
                     sender: username,
                     content: message,
@@ -1291,6 +1410,11 @@
             const messageElement = document.createElement('div');
             messageElement.className = `message ${messageType}`;
             if (messageId) messageElement.id = `msg-${messageId}`;
+            
+            // Asignar índice de color para el remitente
+            if (data.sender && !isCurrentUser && data.type !== 'system-message') {
+                messageElement.dataset.senderIndex = getUserColorIndex(data.sender);
+            }
             
             const timestamp = formatFirebaseTimestamp(data.timestamp);
             const time = formatTime(timestamp);
@@ -1840,7 +1964,14 @@
                     }
                 });
                 
-                elements.sendButton.addEventListener('click', sendMessage);
+                elements.sendButton.addEventListener('click', (e) => {
+                    sendMessage();
+                    // Efecto visual al hacer clic
+                    e.target.style.transform = 'scale(0.95)';
+                    setTimeout(() => {
+                        e.target.style.transform = '';
+                    }, 200);
+                });
                 
                 elements.emojiButton.addEventListener('click', (e) => {
                     e.stopPropagation();
@@ -1992,9 +2123,9 @@
                     }
                 });
 
-                // Mostrar círculos de fondo
-                document.querySelectorAll('.circle').forEach(circle => {
-                    circle.style.opacity = '0.5';
+                // Mostrar burbujas de fondo
+                document.querySelectorAll('.bubble').forEach(bubble => {
+                    bubble.style.opacity = '0.5';
                 });
 
                 // Configurar eventos de foco/desenfoque de ventana
