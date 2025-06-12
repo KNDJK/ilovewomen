@@ -89,6 +89,44 @@
             }
         }
         
+        /* Nuevas animaciones minimalistas */
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        @keyframes slideInUp {
+            from { transform: translateY(20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-5px); }
+        }
+        
+        .animate-fade-in {
+            animation: fadeIn 0.5s ease-out forwards;
+        }
+        
+        .animate-slide-in-up {
+            animation: slideInUp 0.4s ease-out forwards;
+        }
+        
+        .animate-pulse {
+            animation: pulse 2s infinite;
+        }
+        
+        .animate-bounce {
+            animation: bounce 1s infinite;
+        }
+        
         .chat-container {
             width: 100%;
             max-width: 1000px;
@@ -104,6 +142,12 @@
             z-index: 1;
             border: 1px solid rgba(0, 0, 0, 0.05);
             transition: var(--transition);
+            transform: translateY(0);
+        }
+        
+        .chat-container:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.15);
         }
         
         .chat-header {
@@ -129,6 +173,11 @@
             width: auto;
             object-fit: contain;
             filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+            transition: var(--transition);
+        }
+        
+        .logo:hover {
+            transform: rotate(10deg);
         }
         
         .header-title {
@@ -150,6 +199,7 @@
         
         .online-count:hover {
             background-color: rgba(255, 255, 255, 0.3);
+            transform: scale(1.05);
         }
         
         .chat-messages {
@@ -612,6 +662,7 @@
         .scroll-down-btn:hover {
             opacity: 1;
             background: linear-gradient(135deg, var(--primary-light) 0%, var(--secondary) 100%);
+            animation: bounce 1s infinite;
         }
 
         /* Lightbox para imágenes */
@@ -652,6 +703,7 @@
 
         .lightbox-close:hover {
             color: var(--accent);
+            transform: rotate(90deg);
         }
 
         .lightbox-nav {
@@ -680,6 +732,7 @@
 
         .lightbox-nav-btn:hover {
             background: var(--primary);
+            transform: scale(1.1);
         }
 
         /* Confirmación de imagen */
@@ -930,6 +983,51 @@
             }
         }
 
+        /* Nuevo efecto hover para mensajes */
+        .message:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Efecto hover para botones */
+        .btn:hover, .btn-emoji:hover, .lightbox-nav-btn:hover {
+            filter: brightness(1.1);
+        }
+
+        /* Efecto de transición suave para el chat */
+        .chat-messages {
+            transition: all 0.3s ease;
+        }
+
+        /* Mejoras en el selector de emojis */
+        emoji-picker {
+            --emoji-size: 1.5rem;
+            --emoji-padding: 0.5rem;
+            --category-font-size: 0.9rem;
+            --background: white;
+            --border-color: rgba(0, 0, 0, 0.1);
+            --input-border-color: #dfe6e9;
+            --input-font-size: 1rem;
+            --category-emoji-padding: 0.5rem;
+            --indicator-color: var(--primary);
+            --num-columns: 8;
+        }
+
+        emoji-picker::part(search) {
+            padding: 0.5rem;
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--light-gray);
+            margin-bottom: 0.5rem;
+        }
+
+        emoji-picker::part(emoji) {
+            transition: transform 0.2s ease;
+        }
+
+        emoji-picker::part(emoji):hover {
+            transform: scale(1.2);
+        }
+
         @media (max-width: 768px) {
             .chat-container {
                 height: 95vh;
@@ -952,6 +1050,7 @@
 
             emoji-picker {
                 width: 300px;
+                --num-columns: 6;
             }
         }
 
@@ -1002,6 +1101,12 @@
                 bottom: 70px;
                 right: 20px;
             }
+
+            emoji-picker {
+                width: 280px;
+                --num-columns: 5;
+                --emoji-size: 1.3rem;
+            }
         }
     </style>
 </head>
@@ -1047,7 +1152,7 @@
         </div>
     </div>
 
-    <div class="chat-container">
+    <div class="chat-container animate-slide-in-up">
         <div class="chat-header">
             <div class="logo-container">
                 <img src="logo.png" alt="Logo" class="logo">
